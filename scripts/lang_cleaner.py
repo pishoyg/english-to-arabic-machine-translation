@@ -62,8 +62,9 @@ class _EnglishCleaner(_LangCleaner):
 _arabic_cleaner = _ArabicCleaner()
 _english_cleaner = _EnglishCleaner()
 
+
+# This is the only construct that is exported by this file.
 lang_to_cleaner = {
     'ara': _arabic_cleaner,
     'eng': _english_cleaner
 }
-
