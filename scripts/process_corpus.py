@@ -57,7 +57,7 @@ for lang in args.langs:
   # Write info.
   for name, info in [
     ('alphabet', alphabet), ('vocab', vocab), ('clean', clean),
-    ('freq', map(lambda x: x[0] + ': ' + str(x[1]), vocab_freq.items()))]:
+    ('freq', map(lambda x: x[0] + ': ' + str(x[1]), sorted(list(vocab_freq.items()), reverse=True, key=lambda x: x[1])))]:
     with open('.'.join([args.input, name, lang]), 'w') as output_file:
       output_file.write('\n'.join(info))
 
