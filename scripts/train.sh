@@ -7,12 +7,12 @@ DROPOUT=0.2
 set -o xtrace
 mkdir -p ${MODEL_DIR}
 
-python3 -m nmt.nmt \
+python -m nmt.nmt.nmt \
     --src="eng" --tgt="ara" \
     --vocab_prefix="${DATA_PREFIX}.vocab" \
-    --train_prefix="${DATA_PREFIX}.train" \
-    --dev_prefix="${DATA_PREFIX}.dev" \
-    --test_prefix="${DATA_PREFIX}.test" \
+    --train_prefix="${DATA_PREFIX}.clean_train" \
+    --dev_prefix="${DATA_PREFIX}.clean_dev" \
+    --test_prefix="${DATA_PREFIX}.clean_test" \
     --out_dir="${MODEL_DIR}" \
     --num_train_steps=12000000 \
     --steps_per_stats=100 \
