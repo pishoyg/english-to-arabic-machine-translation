@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description=
   ' (2) Vocabulary file, sorted by frequency.'
   ' (3) Alphabet file.'
   'Notice that for every language suffix specified in args.langs, '
-  'a corresponding cleaner must be available from lang_to_cleaner.py.'
+  'a corresponding cleaner must be available from lang_cleaner.py.'
 )
 parser.add_argument(
     '--input',
@@ -42,7 +42,7 @@ for lang in args.langs:
   vocab_freq = dict()
   print('reading corpus')
   for sentence in corpus:
-    words = [cleaner.clean(word) for word in sentence.split()]
+    words = [cleaner.clean(word) for word in sentence.split() if word]
     clean.append(' '.join(words))
     for word in words:
       if word not in vocab:
@@ -50,11 +50,14 @@ for lang in args.langs:
         vocab_freq[word] = 0
       vocab_freq[word] += 1
   print('sorting vocab by frequency')
-  vocab = sorted(list(vocab), key=lambda word: vocab_freq[word])
+  vocab = sorted(list(vocab), key=lambda word: vocab_freq[word], reverse=True)
   print('listing alphabet')
-  alphabet = sorted(list(set(c for c in word for word in vocab)), reverse=True)
+  alphabet = sorted(list(set(c for word in vocab for c in word)))
   print('writing info')
   # Write info.
-  for name, info in [('alphabet', alphabet), ('vocab', vocab), ('clean', clean)]:
+  for name, info in [
+    ('alphabet', alphabet), ('vocab', vocab), ('clean', clean),
+    ('freq', map(lambda x: x[0] + ': ' + str(x[1]), vocab_freq.items()))]:
     with open('.'.join([args.input, name, lang]), 'w') as output_file:
       output_file.write('\n'.join(info))
+
