@@ -15,22 +15,15 @@ parser.add_argument(
   nargs=2,
   default=['ara', 'eng']
 )
-parser.add_argument(
-  '--clean',
-  type=bool,
-  help='Whether or not to use the clean version of the corpus.',
-  default=True
-)
 args = parser.parse_args()
 
 corpora = dict()
 for lang in args.langs:
-  input_path = [args.input] + (['clean'] if args.clean else []) + [lang]
-  with open('.'.join(input_path)) as input_file:
+  with open('.'.join([args.input, lang])) as input_file:
     corpora[lang] = input_file.read().split('\n')
 
 output = {
-  (partition, lang): open('.'.join([args.input, ('clean_' if args.clean else '') + partition, lang]), 'w')
+  (partition, lang): open('.'.join([args.input, partition, lang]), 'w')
   for lang in args.langs for partition in ['train', 'dev', 'test']
 }
 

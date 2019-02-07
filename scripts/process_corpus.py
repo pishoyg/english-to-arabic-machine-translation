@@ -42,7 +42,7 @@ for lang in args.langs:
   vocab_freq = dict()
   print('reading corpus')
   for sentence in corpus:
-    words = [cleaner.clean(word) for word in sentence.split() if word]
+    words = filter(lambda x: x, [cleaner.clean(word) for word in sentence.split()])
     clean.append(' '.join(words))
     for word in words:
       if word not in vocab:

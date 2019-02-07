@@ -1,4 +1,4 @@
-DATA_PREFIX="/home/bishoyboshra/corpora/CorporaDec07/LDC2007T08/isi_ara_eng_parallel_corpus/data/ISI_ara_eng_parallel_corpus"
+DATA_PREFIX="$1"
 MODEL_DIR="${HOME}/models/nmt_model_${RANDOM}"
 NUM_LAYERS=2
 NUM_UNITS=128
@@ -9,10 +9,10 @@ mkdir -p ${MODEL_DIR}
 
 python -m nmt.nmt.nmt \
     --src="eng" --tgt="ara" \
-    --vocab_prefix="${DATA_PREFIX}.vocab" \
-    --train_prefix="${DATA_PREFIX}.clean_train_head" \
-    --dev_prefix="${DATA_PREFIX}.clean_dev_head" \
-    --test_prefix="${DATA_PREFIX}.clean_test_head" \
+    --vocab_prefix="${DATA_PREFIX}.vocab.head" \
+    --train_prefix="${DATA_PREFIX}.clean.train.head" \
+    --dev_prefix="${DATA_PREFIX}.clean.dev.head" \
+    --test_prefix="${DATA_PREFIX}.clean.test.head" \
     --out_dir="${MODEL_DIR}" \
     --num_train_steps=12000000 \
     --steps_per_stats=100 \
