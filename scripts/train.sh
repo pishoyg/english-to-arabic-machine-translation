@@ -8,7 +8,7 @@ TGT="ara"
 NUM_UNITS=2
 NUM_LAYERS=128
 DROPOUT=0.2
-BEAM_WIDTH=3
+BEAM_WIDTH="$2"
 # Stats parameters.
 NUM_TRAIN_STEPS=12000000
 STEPS_PER_STATS=100
@@ -17,7 +17,7 @@ METRICS="bleu"
 OUT_DIR="${HOME}/models/${SRC}-${SRC_V}_${TGT}-${TGT_V}_${NUM_UNITS}x${NUM_LAYERS}_${DROPOUT}_${BEAM_WIDTH}"
 
 # Validate some arguments are present!
-for ARGUMENT in "${DATA_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}"; do
+for ARGUMENT in "${DATA_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}" "${BEAM_WIDTH}"; do
   if [[ "${ARGUMENT}" == "" ]]; then
     echo 'Missing command line arguments!!' && exit 1
   fi
