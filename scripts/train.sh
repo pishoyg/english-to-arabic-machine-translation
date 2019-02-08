@@ -5,19 +5,19 @@ TGT_V=40000
 SRC="eng"
 TGT="ara"
 # Model parameters.
-NUM_UNITS=2
-NUM_LAYERS=128
+NUM_LAYERS=$2
+NUM_UNITS=$3
 DROPOUT=0.2
-BEAM_WIDTH="$2"
-INFER_MODE="$3"
+INFER_MODE="beam_search"
+BEAM_WIDTH=10
 # Stats parameters.
 NUM_TRAIN_STEPS=12000000
 STEPS_PER_STATS=100
 METRICS="bleu"
 
-OUT_DIR="${HOME}/models/${SRC}-${SRC_V}_${TGT}-${TGT_V}_${NUM_UNITS}x${NUM_LAYERS}_${DROPOUT}_${BEAM_WIDTH}"
+OUT_DIR="${HOME}/models/${SRC}-${SRC_V}_${TGT}-${TGT_V}_${NUM_LAYERS}x${NUM_UNITS}_${DROPOUT}_${BEAM_WIDTH}"
 
-# Validate some arguments are present!
+# Perform some argument validation!
 for ARGUMENT in "${DATA_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}" "${BEAM_WIDTH}" "${INFER_MODE}"; do
   if [[ "${ARGUMENT}" == "" ]]; then
     echo 'Missing command line arguments!!' && exit 1
