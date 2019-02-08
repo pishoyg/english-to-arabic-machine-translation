@@ -1,7 +1,7 @@
 import argparse
 import random
 
-parser = argparse.ArgumentParser(description='Split dataset into partitions and corresponding heads.')
+parser = argparse.ArgumentParser(description='Split dataset into partitions.')
 parser.add_argument(
   '--input',
   type=str,
@@ -20,28 +20,20 @@ parser.add_argument(
   type=str,
   help='Partitions.',
   nargs=3,
-  default=['dev', 'test', 'train']
+  default=['train', 'dev', 'test']
 )
 parser.add_argument(
   '--partition_distributions',
   type=float,
   help='Partition distributions.',
   nargs=3,
-  default=[0.05, 0.1, 1.0]
-)
-parser.add_argument(
-  '--partition_heads',
-  type=float,
-  help='Partition heads.',
-  nargs=3,
-  default=[20000, 20000, 200000]
+  default=[0.9, 0.95, 1.0]
 )
 args = parser.parse_args()
+is_valid_prop = lambda x: x >= 0.0 and x <= 1.0
 assert len(args.partitions) == len(args.partition_distributions)
-assert len(args.partitions) == len(args.partition_heads)
-assert all(p >= 0 and p <= 1.0 for p in args.partition_distributions)
+assert all(is_valid_prop(p) for p in args.partition_distributions)
 args.partition_distributions = {partition: prop for partition, prop in zip(args.partitions, args.partition_distributions)}
-args.partition_heads = {partition: head for partition, head in zip(args.partitions, args.partition_heads)}
 
 corpora = dict()
 for lang in args.langs:
@@ -68,11 +60,8 @@ for lang_sentences in corpora:
   for lang, sentence in zip(args.langs, lang_sentences):
     output[(partition, lang)].append(sentence)
 
-for partition_lang_pair, partition_lang_output in output.items():
-  partition = partition_lang_pair[0]
-  lang = partition_lang_pair[1]
-  with open('.'.join([args.input, partition, lang]), 'w') as output_file:
+for partition_lang_tuple, partition_lang_output in output.items():
+  partition = partition_lang_tuple[0]
+  lang = partition_lang_tuple[1]
+  with open('.'.join([args.input, partition] + [lang]), 'w') as output_file:
     output_file.write('\n'.join(partition_lang_output))
-  with open('.'.join([args.input, partition, 'head', lang]), 'w') as output_file:
-    output_file.write('\n'.join(partition_lang_output[0:args.partition_heads[partition]]))
-
