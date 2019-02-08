@@ -36,15 +36,15 @@ fi
 set -o xtrace
 
 # Set up directory and datasets.
-mkdir -p ${OUT_DIR}
+mkdir -p ${OUT_DIR} || exit
 
 VOCAB_PREFIX="${OUT_DIR}/$(basename ${DATA_PREFIX}).vocab-head"
 PARTITION_PREFIX="${OUT_DIR}/$(basename ${DATA_PREFIX}).clean"
-head -${SRC_V} ${DATA_PREFIX}.vocab.${SRC} > ${VOCAB_PREFIX}.${SRC}
-head -${TGT_V} ${DATA_PREFIX}.vocab.${TGT} > ${VOCAB_PREFIX}.${TGT}
+head -${SRC_V} ${DATA_PREFIX}.vocab.${SRC} > ${VOCAB_PREFIX}.${SRC} || exit
+head -${TGT_V} ${DATA_PREFIX}.vocab.${TGT} > ${VOCAB_PREFIX}.${TGT} || exit
 for LANGUAGE in "${SRC}" "${TGT}"; do
   for PARTITION in train dev test; do
-    cp ${DATA_PREFIX}.clean.${PARTITION}.${LANGUAGE} ${OUT_DIR}
+    cp ${DATA_PREFIX}.clean.${PARTITION}.${LANGUAGE} ${OUT_DIR} || exit
   done
 done
 
