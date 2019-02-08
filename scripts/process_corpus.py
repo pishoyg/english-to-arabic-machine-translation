@@ -26,7 +26,15 @@ parser.add_argument(
     nargs=2,
     default=['ara', 'eng']
 )
+parser.add_argument(
+    '--vocab_sizes',
+    type=str,
+    help='Language suffixes.',
+    nargs=2,
+    default=[40000, 20000]
+)
 args = parser.parse_args()
+args.vocab_sizes = {lang: sz for lang, sz in zip(args.langs, args.vocab_sizes)}
 
 for lang in args.langs:
   # Cleaner.
@@ -42,7 +50,7 @@ for lang in args.langs:
   vocab_freq = dict()
   print('reading corpus')
   for sentence in corpus:
-    words = filter(lambda x: x, [cleaner.clean(word) for word in sentence.split()])
+    words = list(filter(lambda x: x, [cleaner.clean(word) for word in sentence.split()]))
     clean.append(' '.join(words))
     for word in words:
       if word not in vocab:
@@ -56,8 +64,12 @@ for lang in args.langs:
   print('writing info')
   # Write info.
   for name, info in [
-    ('alphabet', alphabet), ('vocab', vocab), ('clean', clean),
-    ('freq', map(lambda x: x[0] + ': ' + str(x[1]), sorted(list(vocab_freq.items()), reverse=True, key=lambda x: x[1])))]:
+    ('clean', clean),
+    ('alphabet', alphabet),
+    ('vocab', vocab),
+    ('vocab.head', vocab[0:args.vocab_sizes[lang]]),
+    ('freq', map(lambda x: x[0] + ': ' + str(x[1]), sorted(list(vocab_freq.items()), reverse=True, key=lambda x: x[1])))
+    ]:
     with open('.'.join([args.input, name, lang]), 'w') as output_file:
       output_file.write('\n'.join(info))
 
