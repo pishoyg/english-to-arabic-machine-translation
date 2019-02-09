@@ -57,11 +57,10 @@ $(combine_if_non_empty _SW- ${SUBWORD_OPTION})\
 $(combine_if_non_empty _EM- $(basename ${EMBED_PREFIX}))"
 
 
-# Because I use Python 3 on machines where my username is 'bishoy',
-# and Python 2.7 on machines where my username is 'bishoyboshra'!
-if [[ ${USER} == "bishoy" ]]; then
+# Set Python release based on OS release.
+if [[ $(cat /etc/os-release | grep 'VERSION_ID' | grep -o '[[:digit:]]*\.[[:digit:]]*') == "18.04" ]]; then
   THREE="3"
-elif [[ ${USER} == "bishoyboshra" ]]; then
+else
   THREE=""
 fi
 
@@ -73,11 +72,15 @@ set -o xtrace
 # Set up directory and datasets.
 mkdir -p ${OUT_DIR}/data || exit
 DATA_PREFIX="${OUT_DIR}/data/$(basename ${CORPUS_PREFIX})"
-head -${SRC_V} ${CORPUS_PREFIX}.vocab.${SRC} > ${DATA_PREFIX}.vocab-head.${SRC} || exit
-head -${TGT_V} ${CORPUS_PREFIX}.vocab.${TGT} > ${DATA_PREFIX}.vocab-head.${TGT} || exit
+if [ ! -f ${DATA_PREFIX}.vocab-head.${SRC}]; then
+  head -${SRC_V} ${CORPUS_PREFIX}.vocab.${SRC} > ${DATA_PREFIX}.vocab-head.${SRC} || exit
+fi
+if [ ! -f ${DATA_PREFIX}.vocab-head.${TGT} ]; then
+  head -${TGT_V} ${CORPUS_PREFIX}.vocab.${TGT} > ${DATA_PREFIX}.vocab-head.${TGT} || exit
+fi
 for LANGUAGE in "${SRC}" "${TGT}"; do
   for PARTITION in "train" "dev" "test"; do
-    cp ${CORPUS_PREFIX}.clean.${PARTITION}.${LANGUAGE} ${OUT_DIR}/data/ || exit
+    cp --no-clobber ${CORPUS_PREFIX}.clean.${PARTITION}.${LANGUAGE} ${OUT_DIR}/data/ || exit
   done
 done
 
@@ -114,5 +117,18 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
 echo "${COMMAND}" > "${OUT_DIR}/command.txt"
 
 
+# Start email update job.
+python${THREE} \
+  english-to-arabic-machine-translation/email_update.py \
+  --out_dir=${OUT_DIR} \
+  > /tmp/email_update_error.txt \
+  &
+
+
 # Execute command to start training.
 ${COMMAND}
+
+
+# After training ends, kill the email-update job.
+kill %1
+
