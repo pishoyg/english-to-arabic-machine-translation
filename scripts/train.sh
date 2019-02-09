@@ -7,7 +7,7 @@ TGT="ara"
 CORPUS_PREFIX="${1}"
 SRC_V=40000
 TGT_V=40000
-EMBED_PREFIX=""
+EMBED_PREFIX=""  # TODO(bishoy): parameterize embeddings.
 # Model parameters.
 NUM_LAYERS="${2}"
 NUM_UNITS="${3}"
@@ -19,8 +19,8 @@ BEAM_WIDTH=10
 ATTENTION="${4}"
 OPTIMIZER="sgd"
 LEARNING_RATE=1.0
-DECAY_SCHEME=""
-SUBWORD_OPTION="${5}"
+DECAY_SCHEME="${5}"
+SUBWORD_OPTION="${6}"
 # Stats parameters.
 NUM_TRAIN_STEPS=10000000
 STEPS_PER_STATS=100
@@ -28,8 +28,8 @@ NUM_KEEP_CKPTS=1000000
 METRICS="bleu"
 
 
-# Perform some argument validation!
-for ARGUMENT in "${CORPUS_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}" "${BEAM_WIDTH}" "${INFER_MODE}"; do
+# Validate the mandatory arguments are present!
+for ARGUMENT in "${CORPUS_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}"; do
   if [[ "${ARGUMENT}" == "" ]]; then
     echo 'Missing command line arguments!!' && exit 1
   fi
