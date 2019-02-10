@@ -61,11 +61,13 @@ def get_cur_bleu():
 name = os.path.basename(os.path.normpath(args.out_dir))
 
 # Loop for email updates.
-with smtplib.SMTP_SSL("smtp.gmail.com",
-                      port=465,
-                      context=ssl.create_default_context()) as server:
+if True:  # DO NOT SUBMIT
   def server_login():
     print('Attempting login.') # DO NOT SUBMIT
+    server = smtplib.SMTP_SSL(
+        "smtp.gmail.com",
+        port=465,
+        context=ssl.create_default_context())
     server.login(args.sender_email, args.password)
   last_bleu = -1.0
   counter = 0
