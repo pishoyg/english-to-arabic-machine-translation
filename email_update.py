@@ -26,7 +26,7 @@ parser.add_argument(
   '--period',
   type=int,
   nargs=1,
-  default=1,
+  default=60,
   help='Check on currrent best-bleu every <period> seconds.'
 )
 parser.add_argument(
