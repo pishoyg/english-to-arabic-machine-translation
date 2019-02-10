@@ -117,6 +117,16 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
 echo "${COMMAND}" > "${OUT_DIR}/command.txt"
 
 
+# Start Tensorboard.
+tensorboard \
+  --port=22222 \
+  --logdir="${OUT_DIR}" \
+  &
+
+google-chrome-stable \
+  "http://cse-p07-2166u03:22222/#scalars&_smoothingWeight=0" \
+  &
+
 # Start email update job.
 python${THREE} \
   english-to-arabic-machine-translation/email_update.py \
@@ -130,5 +140,5 @@ ${COMMAND}
 
 
 # After training ends, kill the email-update job.
-kill %1
+kill $(jobs -p)
 
