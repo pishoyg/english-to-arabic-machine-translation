@@ -127,8 +127,8 @@ google-chrome-stable \
   "http://cse-p07-2166u03:22222/#scalars&_smoothingWeight=0" \
   &
 
-# Start email update job.
-python${THREE} \
+# Start email update job (always using python3!).
+python3 \
   english-to-arabic-machine-translation/email_update.py \
   --out_dir=${OUT_DIR} \
   > /tmp/email_update_error.txt \
