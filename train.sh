@@ -72,10 +72,10 @@ set -o xtrace
 # Set up directory and datasets.
 mkdir -p ${OUT_DIR}/data || exit
 DATA_PREFIX="${OUT_DIR}/data/$(basename ${CORPUS_PREFIX})"
-if [ ! -f ${DATA_PREFIX}.vocab-head.${SRC}]; then
+if [[ ! -f ${DATA_PREFIX}.vocab-head.${SRC} ]]; then
   head -${SRC_V} ${CORPUS_PREFIX}.vocab.${SRC} > ${DATA_PREFIX}.vocab-head.${SRC} || exit
 fi
-if [ ! -f ${DATA_PREFIX}.vocab-head.${TGT} ]; then
+if [[ ! -f ${DATA_PREFIX}.vocab-head.${TGT} ]]; then
   head -${TGT_V} ${CORPUS_PREFIX}.vocab.${TGT} > ${DATA_PREFIX}.vocab-head.${TGT} || exit
 fi
 for LANGUAGE in "${SRC}" "${TGT}"; do
