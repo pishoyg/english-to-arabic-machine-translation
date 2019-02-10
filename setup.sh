@@ -1,6 +1,3 @@
-# Enable tracing.
-set -o xtrace
-
 # Go to home directory.
 cd
 
@@ -27,5 +24,8 @@ if [[ ! -f  "${NMT_INIT}" ]]; then
 fi
 
 # Disable power-saving options, to keep the internet working.
-POWER_OFF_COMMAND="su - mluser && sudo iwconfig wlp3s0 power off"
-echo "TODO: ${POWER_OFF_COMMAND}"
+echo "TODO:
+su - mluser
+sudo iwconfig wlp3s0 power off
+sudo systemctl stop NetworkManager.service
+exit"
