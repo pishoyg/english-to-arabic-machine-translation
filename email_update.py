@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import os
 import time
 import smtplib, ssl
@@ -28,6 +29,13 @@ parser.add_argument(
   nargs=1,
   default=60,
   help='Check on currrent best-bleu every <period> seconds.'
+)
+parser.add_argument(
+  '--must_send_every_n_periods',
+  type=int,
+  nargs=1,
+  default=30,
+  help='Must send an update email every <n> periods.'
 )
 args = parser.parse_args()
 
@@ -59,13 +67,23 @@ with smtplib.SMTP_SSL("smtp.gmail.com",
                       context=ssl.create_default_context()) as server:
   server.login(args.sender_email, args.password)
   last_bleu = -1.0
+  counter = 0
   while True:
     time.sleep(args.period)
-    cur_bleu = get_cur_bleu()
-    if cur_bleu != last_bleu:
+    send = False
+    send |= (counter == 0)
+    counter = (counter + 1) % args.must_send_every_n_periods
+    try:
+      cur_bleu = get_cur_bleu()
+      message = str(cur_bleu)
+      send |= (cur_bleu != last_bleu)
+    except Exception as e:
+      message = str(e)
+      send |= True
+    if send:
       server.sendmail(
           args.sender_email,
           args.receiver_emails,
-          "Subject: {name}\n\n{cur_bleu}".format(
-              name=name, cur_bleu=cur_bleu))
+          "Subject: {name}\n\n{message}".format(
+              name=name, message=message))
       last_bleu = cur_bleu
