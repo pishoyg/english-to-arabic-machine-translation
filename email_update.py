@@ -1,6 +1,5 @@
 import argparse
 import json
-import logging
 import os
 import time
 import smtplib, ssl
@@ -65,25 +64,38 @@ name = os.path.basename(os.path.normpath(args.out_dir))
 with smtplib.SMTP_SSL("smtp.gmail.com",
                       port=465,
                       context=ssl.create_default_context()) as server:
-  server.login(args.sender_email, args.password)
+  def server_login():
+    print('Attempting login.') # DO NOT SUBMIT
+    server.login(args.sender_email, args.password)
   last_bleu = -1.0
   counter = 0
+  server_login()
   while True:
+    print('Counter: %d. Sleeping.' % counter)  # DO NOT SUBMIT
     time.sleep(args.period)
-    send = False
-    send |= (counter == 0)
+    should_send = False
+    should_send |= (counter == 0)
     counter = (counter + 1) % args.must_send_every_n_periods
     try:
       cur_bleu = get_cur_bleu()
       message = str(cur_bleu)
-      send |= (cur_bleu != last_bleu)
+      should_send |= (cur_bleu != last_bleu)
+      last_bleu = cur_bleu
     except Exception as e:
       message = str(e)
-      send |= True
-    if send:
+      should_send |= True
+    def server_send():
+      print('Attempting send.')  # DO NOT SUBMIT
       server.sendmail(
           args.sender_email,
           args.receiver_emails,
           "Subject: {name}\n\n{message}".format(
               name=name, message=message))
-      last_bleu = cur_bleu
+    if should_send:
+      try:
+        server_send()
+      except Exception as e:
+        server_login()
+        server_send()
+    else:
+      print('Not sending.')  # DO NOT SUBMIT
