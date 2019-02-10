@@ -64,9 +64,9 @@ with smtplib.SMTP_SSL("smtp.gmail.com",
       server.sendmail(
           args.sender_email,
           args.receiver_emails,
-          "Subject: {cur_bleu}\n\n{name}".format(
-              cur_bleu=cur_bleu,
-              name=os.path.basename(args.out_dir)))
+          "Subject: {name}\n\n{cur_bleu}".format(
+              name=os.path.basename(args.out_dir),
+              cur_bleu=cur_bleu))
       last_bleu = cur_bleu
     time.sleep(args.period)
 
