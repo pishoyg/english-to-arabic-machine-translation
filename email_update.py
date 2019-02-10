@@ -26,7 +26,7 @@ parser.add_argument(
   '--period',
   type=int,
   nargs=1,
-  default=60,
+  default=1,
   help='Check on currrent best-bleu every <period> seconds.'
 )
 parser.add_argument(
@@ -69,9 +69,10 @@ if True:  # DO NOT SUBMIT
         port=465,
         context=ssl.create_default_context())
     server.login(args.sender_email, args.password)
+    return server
   last_bleu = -1.0
   counter = 0
-  server_login()
+  server = server_login()
   while True:
     print('Counter: %d. Sleeping.' % counter)  # DO NOT SUBMIT
     time.sleep(args.period)
@@ -86,7 +87,7 @@ if True:  # DO NOT SUBMIT
     except Exception as e:
       message = str(e)
       should_send |= True
-    def server_send():
+    def server_send(server):
       print('Attempting send.')  # DO NOT SUBMIT
       server.sendmail(
           args.sender_email,
@@ -95,9 +96,9 @@ if True:  # DO NOT SUBMIT
               name=name, message=message))
     if should_send:
       try:
-        server_send()
+        server_send(server)
       except Exception as e:
-        server_login()
-        server_send()
+        server = server_login()
+        server_send(server)
     else:
       print('Not sending.')  # DO NOT SUBMIT
