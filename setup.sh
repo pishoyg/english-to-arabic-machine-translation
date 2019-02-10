@@ -31,4 +31,5 @@ echo "TODO:
 su - mluser
 sudo iwconfig wlp3s0 power off
 sudo systemctl stop NetworkManager.service
+sudo systemctl disable NetworkManager.service
 exit"
