@@ -4,6 +4,7 @@ import os
 import time
 import smtplib, ssl
 
+# Define arguments.
 parser = argparse.ArgumentParser(description=
   'Periodically send email updates on witnessed improvement in BLEU score.'
 )
@@ -29,6 +30,8 @@ parser.add_argument(
   help='Check on currrent best-bleu every <period> seconds.'
 )
 args = parser.parse_args()
+
+# Preprocess arguments.
 for attr_name in ['out_dir', 'email_specs']:
   attr_val = getattr(args, attr_name)
   if isinstance(attr_val, list):
@@ -36,8 +39,13 @@ for attr_name in ['out_dir', 'email_specs']:
     setattr(args, attr_name, attr_val[0])
   else:
     assert isinstance(attr_val, str)
+with open(args.email_specs) as email_specs:
+  args.email_specs = json.loads(email_specs.read())
+  for attr_name in ['sender_email', 'password', 'receiver_emails']:
+    setattr(args, attr_name, args.email_specs[attr_name])
+  del args.email_specs
 
-
+# Get-current-BLEU-score method.
 def get_cur_bleu():
   try:
     hparams = open(os.path.join(args.out_dir, 'hparams'))
@@ -45,14 +53,10 @@ def get_cur_bleu():
     return -1.0
   return json.loads(hparams.read())['best_bleu']
 
+# Experiment name.
+name = os.path.basename(os.path.normpath(args.out_dir))
 
-with open(args.email_specs) as email_specs:
-  args.email_specs = json.loads(email_specs.read())
-  for attr_name in ['sender_email', 'password', 'receiver_emails']:
-    setattr(args, attr_name, args.email_specs[attr_name])
-  del args.email_specs
-
-
+# Loop for email updates.
 with smtplib.SMTP_SSL("smtp.gmail.com",
                       port=465,
                       context=ssl.create_default_context()) as server:
@@ -65,8 +69,6 @@ with smtplib.SMTP_SSL("smtp.gmail.com",
           args.sender_email,
           args.receiver_emails,
           "Subject: {name}\n\n{cur_bleu}".format(
-              name=os.path.basename(args.out_dir),
-              cur_bleu=cur_bleu))
+              name=name, cur_bleu=cur_bleu))
       last_bleu = cur_bleu
     time.sleep(args.period)
-
