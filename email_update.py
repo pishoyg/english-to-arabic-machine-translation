@@ -18,7 +18,7 @@ parser.add_argument(
   '--email_specs',
   type=str,
   nargs=1,
-  default='/tmp/email_specs.txt',
+  default='email_specs.txt',
   help='JSON file containing email specs.'
 )
 parser.add_argument(
