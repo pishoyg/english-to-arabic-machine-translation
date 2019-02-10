@@ -47,11 +47,8 @@ with open(args.email_specs) as email_specs:
 
 # Get-current-BLEU-score method.
 def get_cur_bleu():
-  try:
-    hparams = open(os.path.join(args.out_dir, 'hparams'))
-  except FileNotFoundError as e:
-    return -1.0
-  return json.loads(hparams.read())['best_bleu']
+  with open(os.path.join(args.out_dir, 'hparams')) as hparams:
+    return json.loads(hparams.read())['best_bleu']
 
 # Experiment name.
 name = os.path.basename(os.path.normpath(args.out_dir))
@@ -63,6 +60,7 @@ with smtplib.SMTP_SSL("smtp.gmail.com",
   server.login(args.sender_email, args.password)
   last_bleu = -1.0
   while True:
+    time.sleep(args.period)
     cur_bleu = get_cur_bleu()
     if cur_bleu != last_bleu:
       server.sendmail(
@@ -71,4 +69,3 @@ with smtplib.SMTP_SSL("smtp.gmail.com",
           "Subject: {name}\n\n{cur_bleu}".format(
               name=name, cur_bleu=cur_bleu))
       last_bleu = cur_bleu
-    time.sleep(args.period)
