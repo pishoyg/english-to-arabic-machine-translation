@@ -2,19 +2,22 @@
 cd
 
 # email_specs.json.
-EMAIL_SPECS="${HOME}/email_specs.json"
 if [[ ! -f "${HOME}/email_specs.json" ]]; then
-  echo "Please create ${EMAIL_SPECS}" && exit 1
+  echo "Please create email specs!" && exit 1
 fi
 
 # corpora.
-CORPORA="${HOME}/corpora"
-if [[ ! -d "${CORPORA}" ]]; then
-  echo "Please create ${CORPORA}" && exit 1
+if [[ ! -d "${HOME}/corpora" ]]; then
+  echo "Please obtain corpora!" && exit 1
+fi
+
+# english-to-arabic-machine-translation.
+if [[ ! -d "${HOME}/english-to-arabic-machine-translation" ]]; then
+  git clone https://github.com/bishoyboshra/english-to-arabic-machine-translation.git
 fi
 
 # nmt.
-if [[ ! -d ${HOME}/nmt ]]; then
+if [[ ! -d "${HOME}/nmt" ]]; then
   git clone https://github.com/tensorflow/nmt.git
 fi
 
