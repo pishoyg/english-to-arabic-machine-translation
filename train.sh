@@ -26,7 +26,8 @@ NUM_TRAIN_STEPS=10000000
 STEPS_PER_STATS=100
 NUM_KEEP_CKPTS=1000000
 METRICS="bleu"
-
+# Other.
+TENSORBOARD_PORT=22222
 
 # Validate the mandatory arguments are present!
 for ARGUMENT in "${CORPUS_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}"; do
@@ -72,11 +73,12 @@ set -o xtrace
 # Set up directory and datasets.
 mkdir -p ${OUT_DIR}/data || exit
 DATA_PREFIX="${OUT_DIR}/data/$(basename ${CORPUS_PREFIX})"
+VOCAB_PREFIX=${DATA_PREFIX}.vocab-head
 if [[ ! -f ${DATA_PREFIX}.vocab-head.${SRC} ]]; then
-  head -${SRC_V} ${CORPUS_PREFIX}.vocab.${SRC} > ${DATA_PREFIX}.vocab-head.${SRC} || exit
+  head -${SRC_V} ${CORPUS_PREFIX}.vocab.${SRC} > ${VOCAB_PREFIX}.${SRC} || exit
 fi
 if [[ ! -f ${DATA_PREFIX}.vocab-head.${TGT} ]]; then
-  head -${TGT_V} ${CORPUS_PREFIX}.vocab.${TGT} > ${DATA_PREFIX}.vocab-head.${TGT} || exit
+  head -${TGT_V} ${CORPUS_PREFIX}.vocab.${TGT} > ${VOCAB_PREFIX}.${TGT} || exit
 fi
 for LANGUAGE in "${SRC}" "${TGT}"; do
   for PARTITION in "train" "dev" "test"; do
@@ -90,7 +92,7 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
   --src=${SRC} \\
   --tgt=${TGT} \\
   --out_dir=${OUT_DIR} \\
-  --vocab_prefix=${DATA_PREFIX}.vocab-head \\
+  --vocab_prefix=${VOCAB_PREFIX} \\
   --train_prefix=${DATA_PREFIX}.clean.train \\
   --dev_prefix=${DATA_PREFIX}.clean.dev \\
   --test_prefix=${DATA_PREFIX}.clean.test \\
@@ -110,28 +112,27 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
   --subword_option=${SUBWORD_OPTION} \\
   --steps_per_stats=${STEPS_PER_STATS} \\
   --num_keep_ckpts=${NUM_KEEP_CKPTS} \\
-  --metrics=${METRICS}"
+  --metrics=${METRICS}
+"
 
 
 # Save command in file in the output directory, for future reference.
 echo "${COMMAND}" > "${OUT_DIR}/command.txt"
 
 
-# Start Tensorboard.
+# Start background jobs.
 tensorboard \
-  --port=22222 \
+  --port="${TENSORBOARD_PORT}" \
   --logdir="${OUT_DIR}" \
   &
 
 google-chrome-stable \
-  "http://cse-p07-2166u03:22222/#scalars&_smoothingWeight=0" \
+  "http://$(id -gn):${TENSORBOARD_PORT}/#scalars&_smoothingWeight=0" \
   &
 
-# Start email update job (always using python3!).
 python3 \
   english-to-arabic-machine-translation/email_update.py \
   --out_dir=${OUT_DIR} \
-  > /tmp/email_update_error.txt \
   &
 
 
