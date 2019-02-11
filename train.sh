@@ -21,10 +21,11 @@ OPTIMIZER="sgd"
 LEARNING_RATE=1.0
 DECAY_SCHEME="${5}"
 SUBWORD_OPTION="${6}"
+NUM_KEEP_CKPTS=5
+AVG_CKPTS=true
 # Stats parameters.
 NUM_TRAIN_STEPS=10000000
 STEPS_PER_STATS=100
-NUM_KEEP_CKPTS=1000000
 METRICS="bleu"
 # Other.
 TENSORBOARD_PORT=22222
@@ -55,7 +56,8 @@ _DO-${DROPOUT}\
 _${INFER_MODE}-${BEAM_WIDTH}\
 $(combine_if_non_empty _AT- ${ATTENTION})\
 $(combine_if_non_empty _SW- ${SUBWORD_OPTION})\
-$(combine_if_non_empty _EM- $(basename ${EMBED_PREFIX}))"
+$(combine_if_non_empty _EM- $(basename ${EMBED_PREFIX}))\
+$(combine_if_non_empty $([[ ${AVG_CKPTS} = 'true' ]] && echo _AVG- || echo '') ${NUM_KEEP_CKPTS})"
 
 
 # Set Python release based on OS release.
@@ -108,10 +110,11 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
   --optimizer=${OPTIMIZER} \\
   --learning_rate=${LEARNING_RATE} \\
   --num_train_steps=${NUM_TRAIN_STEPS} \\
+  --avg_ckpts=${AVG_CKPTS} \\
+  --num_keep_ckpts=${NUM_KEEP_CKPTS} \\
   --decay_scheme=${DECAY_SCHEME} \\
   --subword_option=${SUBWORD_OPTION} \\
   --steps_per_stats=${STEPS_PER_STATS} \\
-  --num_keep_ckpts=${NUM_KEEP_CKPTS} \\
   --metrics=${METRICS}
 "
 
@@ -127,7 +130,7 @@ tensorboard \
   &
 
 google-chrome-stable \
-  "http://$(id -gn):${TENSORBOARD_PORT}/#scalars&_smoothingWeight=0" \
+  "http://$(hostname):${TENSORBOARD_PORT}/#scalars&_smoothingWeight=0" \
   &
 
 python3 \
@@ -140,6 +143,6 @@ python3 \
 ${COMMAND}
 
 
-# After training ends, kill the email-update job.
+# After training ends, kill the background job.
 kill $(jobs -p)
 
