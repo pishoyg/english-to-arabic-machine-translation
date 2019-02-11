@@ -78,9 +78,9 @@ def main():
     message = None
     try:
       cur_bleu = get_cur_bleu()
-      if cur_bleu != last_bleu:
+      if cur_bleu - last_bleu > 0.005:
         last_bleu = cur_bleu
-        message = str(cur_bleu)
+        message = '%.2f' % cur_bleu
     except Exception as e:
       message = str(e)
     if message:
@@ -92,4 +92,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-
