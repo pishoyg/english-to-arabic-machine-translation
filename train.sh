@@ -17,10 +17,11 @@ DROPOUT=0.2
 INFER_MODE="beam_search"
 BEAM_WIDTH=10
 ATTENTION="${4}"
+ATTENTION_ARCHITECTURE="${5}"
 OPTIMIZER="sgd"
 LEARNING_RATE=1.0
-DECAY_SCHEME="${5}"
-SUBWORD_OPTION="${6}"
+DECAY_SCHEME="${6}"
+SUBWORD_OPTION="${7}"
 NUM_KEEP_CKPTS=5
 AVG_CKPTS=true
 # Stats parameters.
@@ -31,7 +32,7 @@ METRICS="bleu"
 TENSORBOARD_PORT=22222
 
 # Validate the mandatory arguments are present!
-for ARGUMENT in "${CORPUS_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}"; do
+for ARGUMENT in "${CORPUS_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}" "${ATTENTION}" "${ATTENTION_ARCHITECTURE}"; do
   if [[ "${ARGUMENT}" == "" ]]; then
     echo 'Missing command line arguments!!' && exit 1
   fi
@@ -54,7 +55,7 @@ _${OPTIMIZER}-${LEARNING_RATE}-${NUM_TRAIN_STEPS}$(combine_if_non_empty - ${DECA
 _EN-${ENCODER_TYPE}\
 _DO-${DROPOUT}\
 _${INFER_MODE}-${BEAM_WIDTH}\
-$(combine_if_non_empty _AT- ${ATTENTION})\
+_AT-${ATTENTION}-${ATTENTION_ARCHITECTURE}\
 $(combine_if_non_empty _SW- ${SUBWORD_OPTION})\
 $(combine_if_non_empty _EM- $(basename ${EMBED_PREFIX}))\
 $(combine_if_non_empty $([[ ${AVG_CKPTS} = 'true' ]] && echo _AVG- || echo '') ${NUM_KEEP_CKPTS})"
@@ -107,6 +108,7 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
   --infer_mode=${INFER_MODE} \\
   --beam_width=${BEAM_WIDTH} \\
   --attention=${ATTENTION} \\
+  --attention_architecture=${ATTENTION_ARCHITECTURE} \\
   --optimizer=${OPTIMIZER} \\
   --learning_rate=${LEARNING_RATE} \\
   --num_train_steps=${NUM_TRAIN_STEPS} \\
