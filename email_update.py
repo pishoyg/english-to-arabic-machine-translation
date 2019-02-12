@@ -52,7 +52,11 @@ def preprocess_arguments():
 # Helper methods.
 def get_cur_bleu():
   with open(args.hparams) as hparams:
-    return json.loads(hparams.read())['best_bleu']
+    params = json.loads(hparams.read())
+    best_bleu = '%.2f' % params['best_bleu']
+    if 'avg_best_bleu' in params:
+      best_bleu = best_bleu + '\nAVG:%.2f' % params['avg_best_bleu']
+  return best_bleu
 
 def server_login():
   server = smtplib.SMTP_SSL(
@@ -71,16 +75,16 @@ def server_send(server, message):
 
 def main():
   preprocess_arguments()
-  last_bleu = -1.0
+  last_bleu = None
   server = server_login()
   while True:
     time.sleep(args.period)
     message = None
     try:
       cur_bleu = get_cur_bleu()
-      if cur_bleu - last_bleu > 0.005:
+      if cur_bleu != last_bleu:
         last_bleu = cur_bleu
-        message = '%.2f' % cur_bleu
+        message = cur_bleu
     except Exception as e:
       message = str(e)
     if message:
