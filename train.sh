@@ -1,42 +1,111 @@
 # Parameterized train launcher.
+#
+# Example usage:
+# CORPUS_PREFIX=/home/isi_corpus \
+#   NUM_LAYERS=2 \
+#   NUM_UNITS=128 \
+#   bash train.sh
+#
+# Hyperparameters are defined through the command line.
+# The three hyper parameters above are mandatory for each experiment.
+# Other hyperparameters will default to predefined values if not assigned
+# through the command line.
+#
+# The script does the following functions:
+# - Assign a meaningful name (<name>)to the experiment.
+# - Create a directory called <out_dir> bearing the name of the experiment.
+# - Copy train, dev, and test date into <out_dir>.
+# - Copy a prefix of the vocabulary into <out_dir>.
+# - Launch tensorboard.
+# - Launch google-chrome.
+# - Launch email_update.
+# - Start training.
+# - Kill background jobs after training is finished.
+#
 
-
-# Data parameters.
-SRC="eng"
-TGT="ara"
-CORPUS_PREFIX="${1}"
-SRC_V=40000
-TGT_V=40000
-EMBED_PREFIX=""  # TODO(bishoy): parameterize embeddings.
-# Model parameters.
-NUM_LAYERS="${2}"
-NUM_UNITS="${3}"
-UNIT_TYPE="lstm"
-ENCODER_TYPE="bi"
-DROPOUT=0.2
-INFER_MODE="beam_search"
-BEAM_WIDTH=10
-ATTENTION="${4}"
-ATTENTION_ARCHITECTURE="${5}"
-OPTIMIZER="sgd"
-LEARNING_RATE=1.0
-DECAY_SCHEME="${6}"
-SUBWORD_OPTION="${7}"
-NUM_KEEP_CKPTS=5
-AVG_CKPTS=true
-# Stats parameters.
-NUM_TRAIN_STEPS=10000000
-STEPS_PER_STATS=100
-METRICS="bleu"
-# Other.
-TENSORBOARD_PORT=22222
 
 # Validate the mandatory arguments are present!
-for ARGUMENT in "${CORPUS_PREFIX}" "${NUM_LAYERS}" "${NUM_UNITS}" "${ATTENTION}" "${ATTENTION_ARCHITECTURE}"; do
-  if [[ "${ARGUMENT}" == "" ]]; then
-    echo 'Missing command line arguments!!' && exit 1
-  fi
-done
+if [[ -z "${CORPUS_PREFIX}" ]]; then
+  echo "CORPUS_PREFIX must be defined." && exit 1
+fi
+if [[ -z "${NUM_LAYERS}" ]]; then
+  echo "NUM_LAYERS must be defined." && exit 1
+fi
+if [[ -z "${NUM_UNITS}" ]]; then
+  echo "NUM_UNITS must be defined." && exit 1
+fi
+
+# Assign default values.
+if [[ -z "${SRC}" ]]; then
+  SRC="eng"
+fi
+if [[ -z "${TGT}" ]]; then
+  TGT="ara"
+fi
+if [[ -z "${SRC_V}" ]]; then
+  SRC_V=40000
+fi
+if [[ -z "${TGT_V}" ]]; then
+  TGT_V=40000
+fi
+if [[ -z "${EMBED_PREFIX}" ]]; then
+  # No embedding.
+  EMBED_PREFIX=""
+fi
+if [[ -z "${UNIT_TYPE}" ]]; then
+  UNIT_TYPE="lstm"
+fi
+if [[ -z "${ENCODER_TYPE}" ]]; then
+  ENCODER_TYPE="bi"
+fi
+if [[ -z "${DROPOUT}" ]]; then
+  DROPOUT=0.2
+fi
+if [[ -z "${INFER_MODE}" ]]; then
+  INFER_MODE="beam_search"
+fi
+if [[ -z "${BEAM_WIDTH}" ]]; then
+  BEAM_WIDTH=10
+fi
+if [[ -z "${ATTENTION}" ]]; then
+  # No attention.
+  ATTENTION=""
+fi
+if [[ -z "${ATTENTION_ARCHITECTURE}" ]]; then
+  ATTENTION_ARCHITECTURE="standard"
+fi
+if [[ -z "${OPTIMIZER}" ]]; then
+  OPTIMIZER="sgd"
+fi
+if [[ -z "${LEARNING_RATE}" ]]; then
+  LEARNING_RATE=1.0
+fi
+if [[ -z "${DECAY_SCHEME}" ]]; then
+  # No decay.
+  DECAY_SCHEME=""
+fi
+if [[ -z "${SUBWORD_OPTION}" ]]; then
+  # No subwording.
+  SUBWORD_OPTION=""
+fi
+if [[ -z "${NUM_KEEP_CKPTS}" ]]; then
+  NUM_KEEP_CKPTS=5
+fi
+if [[ -z "${AVG_CKPTS}" ]]; then
+  AVG_CKPTS="true"
+fi
+if [[ -z "${NUM_TRAIN_STEPS}" ]]; then
+  NUM_TRAIN_STEPS=10000000
+fi
+if [[ -z "${STEPS_PER_STATS}" ]]; then
+  STEPS_PER_STATS=100
+fi
+if [[ -z "${METRICS}" ]]; then
+  METRICS="bleu"
+fi
+if [[ -z "${TENSORBOARD_PORT}" ]]; then
+  TENSORBOARD_PORT=22222
+fi
 
 
 combine_if_non_empty() {
@@ -55,7 +124,7 @@ _${OPTIMIZER}-${LEARNING_RATE}-${NUM_TRAIN_STEPS}$(combine_if_non_empty - ${DECA
 _EN-${ENCODER_TYPE}\
 _DO-${DROPOUT}\
 _${INFER_MODE}-${BEAM_WIDTH}\
-_AT-${ATTENTION}-${ATTENTION_ARCHITECTURE}\
+$(combine_if_non_empty _AT- $(combine_if_non_empty ${ATTENTION} -${ATTENTION_ARCHITECTURE}))\
 $(combine_if_non_empty _SW- ${SUBWORD_OPTION})\
 $(combine_if_non_empty _EM- $(basename ${EMBED_PREFIX}))\
 $(combine_if_non_empty $([[ ${AVG_CKPTS} = 'true' ]] && echo _AVG- || echo '') ${NUM_KEEP_CKPTS})"
@@ -147,4 +216,3 @@ ${COMMAND}
 
 # After training ends, kill the background job.
 kill $(jobs -p)
-
