@@ -1,10 +1,11 @@
 # Parameterized train launcher.
 #
 # Example usage:
-# CORPUS_PREFIX=/home/isi_corpus \
-#   NUM_LAYERS=2 \
-#   NUM_UNITS=128 \
-#   bash train.sh
+# bash train.sh \
+#   --corpus_prefix="/home/isi_corpus" \
+#   --num_layers=2 \
+#   --num_units=128 \
+#   
 #
 # Hyperparameters are defined through the command line.
 # The three hyper parameters above are mandatory for each experiment.
@@ -24,87 +25,129 @@
 #
 
 
+# Define flags.
+# Assign default values.
+SRC="eng"
+TGT="ara"
+SRC_V=40000
+TGT_V=40000
+CORPUS_PREFIX=""
+EMBED_PREFIX=""
+NUM_LAYERS=""
+NUM_UNITS=""
+UNIT_TYPE="lstm"
+ENCODER_TYPE="bi"
+DROPOUT=0.2
+INFER_MODE="beam_search"
+BEAM_WIDTH=10
+ATTENTION=""
+ATTENTION_ARCHITECTURE="standard"
+OPTIMIZER="sgd"
+LEARNING_RATE=1.0
+DECAY_SCHEME=""
+SUBWORD_OPTION=""
+NUM_KEEP_CKPTS=5
+AVG_CKPTS="true"
+NUM_TRAIN_STEPS=10000000
+STEPS_PER_STATS=100
+METRICS="bleu"
+TENSORBOARD_PORT=22222
+
+
+# Override using values provided at the command line.
+while [ $# -gt 0 ]; do
+  case "${1}" in
+    --src=*)
+      SRC="${1#*=}"
+      ;;
+    --tgt=*)
+      TGT="${1#*=}"
+      ;;
+    --src_v=*)
+      SRC_V="${1#*=}"
+      ;;
+    --tgt_v=*)
+      TGT_V="${1#*=}"
+      ;;
+    --corpus_prefix=*)
+      CORPUS_PREFIX="${1#*=}"
+      ;;
+    --embed_prefix=*)
+      EMBED_PREFIX="${1#*=}"
+      ;;
+    --num_layers=*)
+      NUM_LAYERS="${1#*=}"
+      ;;
+    --num_units=*)
+      NUM_UNITS="${1#*=}"
+      ;;
+    --unit_type=*)
+      UNIT_TYPE="${1#*=}"
+      ;;
+    --encoder_type=*)
+      ENCODER_TYPE="${1#*=}"
+      ;;
+    --dropout=*)
+      DROPOUT="${1#*=}"
+      ;;
+    --infer_mode=*)
+      INFER_MODE="${1#*=}"
+      ;;
+    --beam_width=*)
+      BEAM_WIDTH="${1#*=}"
+      ;;
+    --attention=*)
+      ATTENTION="${1#*=}"
+      ;;
+    --attention_architecture=*)
+      ATTENTION_ARCHITECTURE="${1#*=}"
+      ;;
+    --optimizer=*)
+      OPTIMIZER="${1#*=}"
+      ;;
+    --learning_rate=*)
+      LEARNING_RATE="${1#*=}"
+      ;;
+    --decay_scheme=*)
+      DECAY_SCHEME="${1#*=}"
+      ;;
+    --subword_option=*)
+      SUBWORD_OPTION="${1#*=}"
+      ;;
+    --num_keep_ckpts=*)
+      NUM_KEEP_CKPTS="${1#*=}"
+      ;;
+    --avg_ckpts=*)
+      AVG_CKPTS="${1#*=}"
+      ;;
+    --num_train_steps=*)
+      NUM_TRAIN_STEPS="${1#*=}"
+      ;;
+    --steps_per_stats=*)
+      STEPS_PER_STATS="${1#*=}"
+      ;;
+    --metrics=*)
+      METRICS="${1#*=}"
+      ;;
+    --tensorboard_port=*)
+      TENSORBOARD_PORT="${1#*=}"
+      ;;
+    *)
+      echo "Unknown flag: ${1}" && exit 1
+  esac
+  shift
+done
+
+
 # Validate the mandatory arguments are present!
 if [[ -z "${CORPUS_PREFIX}" ]]; then
-  echo "CORPUS_PREFIX must be defined." && exit 1
+  echo "--corpus_prefix must be defined." && exit 1
 fi
 if [[ -z "${NUM_LAYERS}" ]]; then
-  echo "NUM_LAYERS must be defined." && exit 1
+  echo "--num_layers must be defined." && exit 1
 fi
 if [[ -z "${NUM_UNITS}" ]]; then
-  echo "NUM_UNITS must be defined." && exit 1
-fi
-
-# Assign default values.
-if [[ -z "${SRC}" ]]; then
-  SRC="eng"
-fi
-if [[ -z "${TGT}" ]]; then
-  TGT="ara"
-fi
-if [[ -z "${SRC_V}" ]]; then
-  SRC_V=40000
-fi
-if [[ -z "${TGT_V}" ]]; then
-  TGT_V=40000
-fi
-if [[ -z "${EMBED_PREFIX}" ]]; then
-  # No embedding.
-  EMBED_PREFIX=""
-fi
-if [[ -z "${UNIT_TYPE}" ]]; then
-  UNIT_TYPE="lstm"
-fi
-if [[ -z "${ENCODER_TYPE}" ]]; then
-  ENCODER_TYPE="bi"
-fi
-if [[ -z "${DROPOUT}" ]]; then
-  DROPOUT=0.2
-fi
-if [[ -z "${INFER_MODE}" ]]; then
-  INFER_MODE="beam_search"
-fi
-if [[ -z "${BEAM_WIDTH}" ]]; then
-  BEAM_WIDTH=10
-fi
-if [[ -z "${ATTENTION}" ]]; then
-  # No attention.
-  ATTENTION=""
-fi
-if [[ -z "${ATTENTION_ARCHITECTURE}" ]]; then
-  ATTENTION_ARCHITECTURE="standard"
-fi
-if [[ -z "${OPTIMIZER}" ]]; then
-  OPTIMIZER="sgd"
-fi
-if [[ -z "${LEARNING_RATE}" ]]; then
-  LEARNING_RATE=1.0
-fi
-if [[ -z "${DECAY_SCHEME}" ]]; then
-  # No decay.
-  DECAY_SCHEME=""
-fi
-if [[ -z "${SUBWORD_OPTION}" ]]; then
-  # No subwording.
-  SUBWORD_OPTION=""
-fi
-if [[ -z "${NUM_KEEP_CKPTS}" ]]; then
-  NUM_KEEP_CKPTS=5
-fi
-if [[ -z "${AVG_CKPTS}" ]]; then
-  AVG_CKPTS="true"
-fi
-if [[ -z "${NUM_TRAIN_STEPS}" ]]; then
-  NUM_TRAIN_STEPS=10000000
-fi
-if [[ -z "${STEPS_PER_STATS}" ]]; then
-  STEPS_PER_STATS=100
-fi
-if [[ -z "${METRICS}" ]]; then
-  METRICS="bleu"
-fi
-if [[ -z "${TENSORBOARD_PORT}" ]]; then
-  TENSORBOARD_PORT=22222
+  echo "--num_units must be defined." && exit 1
 fi
 
 
