@@ -3,49 +3,46 @@
 # Example usage:
 # bash train.sh \
 #   --corpus_prefix="/home/isi_corpus" \
-#   --num_layers=2 \
-#   --num_units=128 \
-#   
+#   --batch_size=32
 #
-# Hyperparameters are defined through the command line.
-# The three hyper parameters above are mandatory for each experiment.
-# Other hyperparameters will default to predefined values if not assigned
-# through the command line.
+# The '--corpus_prefix' flag must be set int the command line. Other
+# hyperparameters have default values that will be assigned unless overriden
+# through the command line. Please refer to nmt/nmt.py for the interpretations
+# of the present parameters.
 #
-# The script does the following functions:
-# - Assign a meaningful name (<name>)to the experiment.
-# - Create a directory called <out_dir> bearing the name of the experiment.
-# - Copy train, dev, and test date into <out_dir>.
-# - Copy a prefix of the vocabulary into <out_dir>.
+# The script does the following:
+# - Assign a meaningful name to the experiment.
+# - Create an output directory bearing the name of the experiment.
+# - Copy train, dev, and test date into the output directory.
+# - Copy a prefix of the vocabulary into the output directory.
 # - Launch tensorboard.
 # - Launch google-chrome.
 # - Launch email_update.
 # - Start training.
-# - Kill background jobs after training is finished.
-#
+# - Wait until training is finished, and kill background jobs.
 
 
-# Define flags.
-# Assign default values.
+# Default values for model parameters.
 SRC="eng"
 TGT="ara"
 SRC_V=40000
 TGT_V=40000
 CORPUS_PREFIX=""
+BATCH_SIZE=128
 EMBED_PREFIX=""
-NUM_LAYERS=""
-NUM_UNITS=""
+NUM_LAYERS=2
+NUM_UNITS=128
 UNIT_TYPE="lstm"
 ENCODER_TYPE="bi"
 DROPOUT=0.2
 INFER_MODE="beam_search"
 BEAM_WIDTH=10
-ATTENTION=""
+ATTENTION="scaled_luong"
 ATTENTION_ARCHITECTURE="standard"
 OPTIMIZER="sgd"
 LEARNING_RATE=1.0
 DECAY_SCHEME=""
-SUBWORD_OPTION=""
+SUBWORD_OPTION="bpe"
 NUM_KEEP_CKPTS=5
 AVG_CKPTS="true"
 NUM_TRAIN_STEPS=10000000
@@ -54,7 +51,7 @@ METRICS="bleu"
 TENSORBOARD_PORT=22222
 
 
-# Override using values provided at the command line.
+# Override default values using command line flags.
 while [ $# -gt 0 ]; do
   case "${1}" in
     --src=*)
@@ -71,6 +68,9 @@ while [ $# -gt 0 ]; do
       ;;
     --corpus_prefix=*)
       CORPUS_PREFIX="${1#*=}"
+      ;;
+    --batch_size=*)
+      BATCH_SIZE="${1#*=}"
       ;;
     --embed_prefix=*)
       EMBED_PREFIX="${1#*=}"
@@ -138,19 +138,6 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-
-# Validate the mandatory arguments are present!
-if [[ -z "${CORPUS_PREFIX}" ]]; then
-  echo "--corpus_prefix must be defined." && exit 1
-fi
-if [[ -z "${NUM_LAYERS}" ]]; then
-  echo "--num_layers must be defined." && exit 1
-fi
-if [[ -z "${NUM_UNITS}" ]]; then
-  echo "--num_units must be defined." && exit 1
-fi
-
-
 combine_if_non_empty() {
   if [[ "${1}" != "" && "${2}" != "" ]]; then
     echo "${1}${2}"
@@ -159,7 +146,6 @@ combine_if_non_empty() {
   fi
 }
 
-
 # Assign a meaningful name to the output directory.
 OUT_DIR="${HOME}/models/${SRC}-${SRC_V}_${TGT}-${TGT_V}\
 _${NUM_LAYERS}x${NUM_UNITS}-${UNIT_TYPE}\
@@ -167,23 +153,21 @@ _${OPTIMIZER}-${LEARNING_RATE}-${NUM_TRAIN_STEPS}$(combine_if_non_empty - ${DECA
 _EN-${ENCODER_TYPE}\
 _DO-${DROPOUT}\
 _${INFER_MODE}-${BEAM_WIDTH}\
+_BT-${BATCH_SIZE}\
 $(combine_if_non_empty _AT- $(combine_if_non_empty ${ATTENTION} -${ATTENTION_ARCHITECTURE}))\
 $(combine_if_non_empty _SW- ${SUBWORD_OPTION})\
 $(combine_if_non_empty _EM- $(basename ${EMBED_PREFIX}))\
 $(combine_if_non_empty $([[ ${AVG_CKPTS} = 'true' ]] && echo _AVG- || echo '') ${NUM_KEEP_CKPTS})"
 
-
-# Set Python release based on OS release.
+# Set Python version based on OS release.
 if [[ $(cat /etc/os-release | grep 'VERSION_ID' | grep -o '[[:digit:]]*\.[[:digit:]]*') == "18.04" ]]; then
   THREE="3"
 else
   THREE=""
 fi
 
-
 # Make operations visible to user.
 set -o xtrace
-
 
 # Set up directory and datasets.
 mkdir -p ${OUT_DIR}/data || exit
@@ -201,7 +185,6 @@ for LANGUAGE in "${SRC}" "${TGT}"; do
   done
 done
 
-
 # Construct train command.
 COMMAND="python${THREE} -m nmt.nmt.nmt \\
   --src=${SRC} \\
@@ -211,6 +194,7 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
   --train_prefix=${DATA_PREFIX}.clean.train \\
   --dev_prefix=${DATA_PREFIX}.clean.dev \\
   --test_prefix=${DATA_PREFIX}.clean.test \\
+  --batch_size=${BATCH_SIZE} \\
   --embed_prefix=${EMBED_PREFIX} \\
   --num_layers=${NUM_LAYERS} \\
   --num_units=${NUM_UNITS} \\
@@ -232,10 +216,8 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
   --metrics=${METRICS}
 "
 
-
 # Save command in file in the output directory, for future reference.
 echo "${COMMAND}" > "${OUT_DIR}/command.txt"
-
 
 # Start background jobs.
 tensorboard \
@@ -252,10 +234,9 @@ python3 \
   --out_dir=${OUT_DIR} \
   &
 
-
 # Execute command to start training.
 ${COMMAND}
 
-
 # After training ends, kill the background job.
 kill $(jobs -p)
+
