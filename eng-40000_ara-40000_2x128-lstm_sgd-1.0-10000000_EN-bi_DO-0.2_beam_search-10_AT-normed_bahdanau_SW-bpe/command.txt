@@ -1,0 +1,25 @@
+python -m nmt.nmt.nmt \
+  --src=eng \
+  --tgt=ara \
+  --out_dir=/home/bishoyboshra/models/eng-40000_ara-40000_2x128-lstm_sgd-1.0-10000000_EN-bi_DO-0.2_beam_search-10_AT-normed_bahdanau_SW-bpe \
+  --vocab_prefix=/home/bishoyboshra/models/eng-40000_ara-40000_2x128-lstm_sgd-1.0-10000000_EN-bi_DO-0.2_beam_search-10_AT-normed_bahdanau_SW-bpe/data/ISI_ara_eng_parallel_corpus.vocab-head \
+  --train_prefix=/home/bishoyboshra/models/eng-40000_ara-40000_2x128-lstm_sgd-1.0-10000000_EN-bi_DO-0.2_beam_search-10_AT-normed_bahdanau_SW-bpe/data/ISI_ara_eng_parallel_corpus.clean.train \
+  --dev_prefix=/home/bishoyboshra/models/eng-40000_ara-40000_2x128-lstm_sgd-1.0-10000000_EN-bi_DO-0.2_beam_search-10_AT-normed_bahdanau_SW-bpe/data/ISI_ara_eng_parallel_corpus.clean.dev \
+  --test_prefix=/home/bishoyboshra/models/eng-40000_ara-40000_2x128-lstm_sgd-1.0-10000000_EN-bi_DO-0.2_beam_search-10_AT-normed_bahdanau_SW-bpe/data/ISI_ara_eng_parallel_corpus.clean.test \
+  --embed_prefix= \
+  --num_layers=2 \
+  --num_units=128 \
+  --unit_type=lstm \
+  --encoder_type=bi \
+  --dropout=0.2 \
+  --infer_mode=beam_search \
+  --beam_width=10 \
+  --attention=normed_bahdanau \
+  --optimizer=sgd \
+  --learning_rate=1.0 \
+  --num_train_steps=10000000 \
+  --decay_scheme= \
+  --subword_option=bpe \
+  --steps_per_stats=100 \
+  --num_keep_ckpts=1000000 \
+  --metrics=bleu
