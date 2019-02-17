@@ -30,8 +30,8 @@ TGT_V=40000
 CORPUS_PREFIX=""
 BATCH_SIZE=128
 EMBED_PREFIX=""
-NUM_LAYERS=2
-NUM_UNITS=128
+NUM_LAYERS=4
+NUM_UNITS=256
 UNIT_TYPE="lstm"
 ENCODER_TYPE="bi"
 DROPOUT=0.2
@@ -137,6 +137,10 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+if [[ -z "${CORPUS_PREFIX}" ]]; then
+  echo "--corpus_prefix must be set." && exit 1
+fi
 
 combine_if_non_empty() {
   if [[ "${1}" != "" && "${2}" != "" ]]; then
