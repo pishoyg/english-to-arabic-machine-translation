@@ -66,6 +66,10 @@ split \
   "${INPUT_PATH}.${LANGUAGE}" \
   "${WORK_DIR}/tmp-"
 
+for TMP_FILE in $(ls ${WORK_DIR}/tmp-*.split); do
+  sed -i ':a;N;$!ba;s/\n/.\n/g' "${TMP_FILE}"
+done
+
 java \
   -mx3g \
   edu.stanford.nlp.pipeline.StanfordCoreNLP \
@@ -73,20 +77,21 @@ java \
   -extension ".split" \
   -outputExtension ".${EXTENSION}" \
   -outputFormat "conll" \
-  -outputDirectory "${WORK_DIR}" \
-  -ssplit.eolonly true \
   -output.prettyPrint false \
+  -outputDirectory "${WORK_DIR}" \
   -output.columns word \
   -annotators tokenize,ssplit \
   -tokenize.language ar \
+  -ssplit.eolonly true \
   -segment.model "${MODEL}" \
   -replaceExtension true \
   || exit 1
+
 
 FINAL="${WORK_DIR}/$(basename ${INPUT_PATH}).${EXTENSION}.${LANGUAGE}"
 
 cat ${WORK_DIR}/tmp-*.${EXTENSION} > "${FINAL}"
 
-sed -i 's/\./\n/g' "${FINAL}"
+sed -i ':a;N;$!ba;s/\./\n/g' "${FINAL}"
 
 cp "${FINAL}" "$(dirname ${INPUT_PATH})"
