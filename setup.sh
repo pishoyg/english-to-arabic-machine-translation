@@ -1,3 +1,6 @@
+# TODO: Retrieve Stanford CoreNLP.
+# TODO: Retrieve english-to-arabic-machine-translation.
+
 # Go to home directory.
 cd
 
