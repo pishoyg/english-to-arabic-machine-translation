@@ -151,7 +151,8 @@ combine_if_non_empty() {
 }
 
 # Assign a meaningful name to the output directory.
-OUT_DIR="${HOME}/models/${SRC}-${SRC_V}_${TGT}-${TGT_V}\
+OUT_DIR="${HOME}/models/$(basename ${CORPUS_PREFIX})\
+_${SRC}-${SRC_V}_${TGT}-${TGT_V}\
 _${NUM_LAYERS}x${NUM_UNITS}-${UNIT_TYPE}\
 _${OPTIMIZER}-${LEARNING_RATE}-${NUM_TRAIN_STEPS}$(combine_if_non_empty - ${DECAY_SCHEME})\
 _EN-${ENCODER_TYPE}\
@@ -176,12 +177,11 @@ set -o xtrace
 # Set up directory and datasets.
 mkdir -p ${OUT_DIR}/data || exit
 DATA_PREFIX="${OUT_DIR}/data/$(basename ${CORPUS_PREFIX})"
-VOCAB_PREFIX=${DATA_PREFIX}.vocab-head
 if [[ ! -f ${DATA_PREFIX}.vocab-head.${SRC} ]]; then
-  head -${SRC_V} ${CORPUS_PREFIX}.vocab.${SRC} > ${VOCAB_PREFIX}.${SRC} || exit
+  head -${SRC_V} ${CORPUS_PREFIX}.vocab.${SRC} > ${DATA_PREFIX}.vocab-head.${SRC} || exit
 fi
 if [[ ! -f ${DATA_PREFIX}.vocab-head.${TGT} ]]; then
-  head -${TGT_V} ${CORPUS_PREFIX}.vocab.${TGT} > ${VOCAB_PREFIX}.${TGT} || exit
+  head -${TGT_V} ${CORPUS_PREFIX}.vocab.${TGT} > ${DATA_PREFIX}.vocab-head.${TGT} || exit
 fi
 for LANGUAGE in "${SRC}" "${TGT}"; do
   for PARTITION in "train" "dev" "test"; do
@@ -194,10 +194,10 @@ COMMAND="python${THREE} -m nmt.nmt.nmt \\
   --src=${SRC} \\
   --tgt=${TGT} \\
   --out_dir=${OUT_DIR} \\
-  --vocab_prefix=${VOCAB_PREFIX} \\
-  --train_prefix=${DATA_PREFIX}.clean.train \\
-  --dev_prefix=${DATA_PREFIX}.clean.dev \\
-  --test_prefix=${DATA_PREFIX}.clean.test \\
+  --vocab_prefix=${DATA_PREFIX}.vocab-head \\
+  --train_prefix=${DATA_PREFIX}.train \\
+  --dev_prefix=${DATA_PREFIX}.dev \\
+  --test_prefix=${DATA_PREFIX}.test \\
   --batch_size=${BATCH_SIZE} \\
   --embed_prefix=${EMBED_PREFIX} \\
   --num_layers=${NUM_LAYERS} \\
