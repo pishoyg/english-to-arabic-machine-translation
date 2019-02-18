@@ -5,11 +5,7 @@ from collections import Counter
 
 # Arguments.
 parser = argparse.ArgumentParser(description=
-  'Read corpora, and generate'
-  ' (1) A cleaned version of it.'
-  ' (2) Vocabulary file, sorted by frequency.'
-  ' (3) Alphabet file.'
-  ' (4) Frequencey file, containing frequencies of each word. '
+  'Read corpora, and generate a cleaned version of it. '
   'Notice that for every language suffix specified in args.langs, '
   'a corresponding cleaner must be available from lang_cleaner.py.'
 )
@@ -35,24 +31,10 @@ for lang in args.langs:
   # Cleaner.
   cleaner = lang_to_cleaner[lang]
 
-  # Read Corpus.
   print('Reading corps.')
   with open('.'.join([args.input, lang])) as input_file:
     clean = list(map(cleaner.clean, input_file.read().split('\n')))
 
-  # Extract Info.
-  print('Extracting Vocabulary.')
-  vocab_freq = dict(Counter(chain.from_iterable(map(lambda sentence: sentence.split(), clean))))
-  print('Sorting vocab by frequency.')
-  sorted_vocab = sorted(list(vocab_freq.keys()), key=lambda word: vocab_freq[word], reverse=True)
-  print('Listing alphabet.')
-  alphabet = sorted(list(set(c for word in sorted_vocab for c in word)))
   print('Writing info.')
-  # Write info.
-  for name, info in [
-    ('clean', clean),
-    ('alphabet', alphabet),
-    ('vocab', sorted_vocab),
-    ('freq', map(lambda word: word + ' ' + str(vocab_freq[word]), sorted_vocab))]:
-    with open('.'.join([args.input, name, lang]), 'w') as output_file:
-      output_file.write('\n'.join(info))
+  with open('.'.join([args.input, 'clean', lang]), 'w') as output_file:
+    output_file.write('\n'.join(clean))

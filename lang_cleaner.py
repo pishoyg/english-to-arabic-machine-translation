@@ -51,3 +51,4 @@ lang_to_cleaner = {
   'ara': _arabic_cleaner,
   'eng': _english_cleaner
 }
+
