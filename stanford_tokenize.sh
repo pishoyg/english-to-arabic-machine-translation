@@ -1,15 +1,23 @@
 # Set default values.
 INSTALL_DIR="stanford-corenlp-full-2018-10-05"
+MODEL="stanford-arabic-corenlp-2018-10-05-models/edu/stanford/nlp/models/segmenter/arabic/arabic-segmenter-atb+bn+arztrain.ser.gz"
 INPUT_PATH=""
 EXTENSION="stanford"
+
 # Parsing flags.
 while [ $# -gt 0 ]; do
   case "${1}" in
     --install_dir=*)
       INSTALL_DIR="${1#*=}"
       ;;
+    --model=*)
+      MODEL="${1#*=}"
+      ;;
     --input_path=*)
       INPUT_PATH="${1#*=}"
+      ;;
+    --extension=*)
+      EXTENSION="${1#*=}"
       ;;
     *)
       echo "Unknown flag: ${1}" && exit 1
@@ -50,7 +58,7 @@ java \
   -output.columns word \
   -annotators tokenize,ssplit \
   -tokenize.language ar \
-  -segment.model "stanford-corenlp-full-2018-10-05/edu/stanford/nlp/models/segmenter/arabic/arabic-segmenter-atb+bn+arztrain.ser.gz" \
+  -segment.model "${MODEL}" \
   || exit 1
 
 sed -i 's/\./\n/g' "${INPUT_PATH}.${EXTENSION}"
