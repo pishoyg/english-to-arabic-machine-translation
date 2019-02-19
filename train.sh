@@ -27,6 +27,8 @@ SRC="eng"
 TGT="ara"
 SRC_V=40000
 TGT_V=40000
+SRC_EXTENSION=""
+TGT_EXTENSION=""
 CORPUS_PREFIX=""
 BATCH_SIZE=128
 EMBED_PREFIX=""
@@ -65,6 +67,12 @@ while [ $# -gt 0 ]; do
       ;;
     --tgt_v=*)
       TGT_V="${1#*=}"
+      ;;
+    --src_extension=*)
+      SRC_EXTENSION="${1#*=}"
+      ;;
+    --tgt_extension=*)
+      TGT_EXTENSION="${1#*=}"
       ;;
     --corpus_prefix=*)
       CORPUS_PREFIX="${1#*=}"
@@ -152,7 +160,8 @@ combine_if_non_empty() {
 
 # Assign a meaningful name to the output directory.
 OUT_DIR="${HOME}/models/$(basename ${CORPUS_PREFIX})\
-_${SRC}-${SRC_V}_${TGT}-${TGT_V}\
+_${SRC}-${SRC_EXTENSION}-${SRC_V}
+_${TGT}-${TGT_EXTENSION}-${TGT_V}\
 _${NUM_LAYERS}x${NUM_UNITS}-${UNIT_TYPE}\
 _${OPTIMIZER}-${LEARNING_RATE}-${NUM_TRAIN_STEPS}$(combine_if_non_empty - ${DECAY_SCHEME})\
 _EN-${ENCODER_TYPE}\
