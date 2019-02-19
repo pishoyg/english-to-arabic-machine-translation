@@ -22,6 +22,8 @@ done
 # Make operations visible to user.
 set -o xtrace
 
+pip install tf-nightly tf-nightly-gpu
+
 # email_specs.json.
 if [[ ! -f "${HOME}/email_specs.json" ]]; then
   echo "Please create email specs!" && exit 1
