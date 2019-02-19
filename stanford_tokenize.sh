@@ -58,17 +58,18 @@ fi
 set -o xtrace
 
 mkdir -p "${WORK_DIR}"
+cp "${INPUT_PATH}.${LANGUAGE}" "${WORK_DIR}" || exit 1
+WORK_DIR_CORPUS="${WORK_DIR}/$(basename ${INPUT_PATH}.${LANGUAGE})"
+sed -i 's/\./ /g' "${WORK_DIR_CORPUS}" || exit 1
+sed -i ':a;N;$!ba;s/\n/\.\n/g' "${WORK_DIR_CORPUS}" || exit 1
 
 split \
   --suffix-length=7 \
   --additional-suffix=".split" \
   --lines=1000 \
-  "${INPUT_PATH}.${LANGUAGE}" \
-  "${WORK_DIR}/tmp-"
-
-for TMP_FILE in $(ls ${WORK_DIR}/tmp-*.split); do
-  sed -i ':a;N;$!ba;s/\n/.\n/g' "${TMP_FILE}"
-done
+  "${WORK_DIR_CORPUS}" \
+  "${WORK_DIR}/tmp-" \
+   || exit 1
 
 java \
   -mx3g \
@@ -93,5 +94,6 @@ FINAL="${WORK_DIR}/$(basename ${INPUT_PATH}).${EXTENSION}.${LANGUAGE}"
 cat ${WORK_DIR}/tmp-*.${EXTENSION} > "${FINAL}"
 
 sed -i ':a;N;$!ba;s/\./\n/g' "${FINAL}"
+sed -i ':a;N;$!ba;s/\n\n/\n/g' "${FINAL}"
 
 cp "${FINAL}" "$(dirname ${INPUT_PATH})"
