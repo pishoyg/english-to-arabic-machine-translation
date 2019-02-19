@@ -10,31 +10,37 @@ parser = argparse.ArgumentParser(description=
   'a corresponding cleaner must be available from lang_cleaner.py.'
 )
 parser.add_argument(
-    '--input',
+    '--corpus_prefix',
     type=str,
     required=True,
-    help='Input text file containing corpus. '
-    'This will also be used as a prefix of the output path. '
-    'Please do NOT include the language suffix.'
+    help='Corpora prefix. '
+    'The input path will be "<corpus_prefix>.<lang_extension>.<lang>", '
+    'and the output path will be "<corpus_prefix>.<lang_extension>.clean.<lang>". '
+    'If any field is missing, it will be ignored.'
+)
+parser.add_argument(
+    '--lang_extensions',
+    type=str,
+    help='Language extensions. See documentation of --corpus_prefix for details.',
+    nargs=2,
+    default=['stanford', '']
 )
 parser.add_argument(
     '--langs',
     type=str,
-    help='Language suffixes.',
+    help='Language suffixes. See documentation of --corpus_prefix for details.',
     nargs=2,
     default=['ara', 'eng']
 )
 args = parser.parse_args()
 
-for lang in args.langs:
+assert len(args.lang_extensions) == len(args.langs)
+
+for lang, lang_extension in zip(args.langs, args.lang_extensions):
   print('Processing language %s.' % lang)
-  # Cleaner.
-  cleaner = lang_to_cleaner[lang]
-
-  print('Reading corps.')
-  with open('.'.join([args.input, lang])) as input_file:
-    clean = list(map(cleaner.clean, input_file.read().split('\n')))
-
-  print('Writing info.')
-  with open('.'.join([args.input, 'clean', lang]), 'w') as output_file:
-    output_file.write('\n'.join(clean))
+  input_file = '.'.join(filter(None, [args.corpus_prefix, lang_extension, lang]))
+  output_file = '.'.join(filter(None, [args.corpus_prefix, lang_extension, 'clean', lang]))
+  with open(input_file) as input_file:
+    cleaned_corpus = map(lang_to_cleaner[lang].clean, input_file.read().split('\n'))
+  with open(output_file, 'w') as output_file:
+    output_file.write('\n'.join(cleaned_corpus))
