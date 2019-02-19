@@ -1,9 +1,15 @@
 # Set default values.
+# Directory where Stanford CoreNLP is installed.
 INSTALL_DIR="stanford-corenlp-full-2018-10-05"
+# Path to language model.
 MODEL="stanford-arabic-corenlp-2018-10-05-models/edu/stanford/nlp/models/segmenter/arabic/arabic-segmenter-atb+bn+arztrain.ser.gz"
-INPUT_PATH=""
+# Corpus prefix. That is, corpus path missing the language extension.
+CORPUS_PREFIX=""
+# Language extension.
 LANGUAGE="ara"
+# Temporary work directory.
 WORK_DIR="/tmp/tmp"
+# Output extension.
 EXTENSION="stanford"
 
 # Parsing flags.
@@ -15,8 +21,8 @@ while [ $# -gt 0 ]; do
     --model=*)
       MODEL="${1#*=}"
       ;;
-    --input_path=*)
-      INPUT_PATH="${1#*=}"
+    --corpus_prefix=*)
+      CORPUS_PREFIX="${1#*=}"
       ;;
     --language=*)
       LANGUAGE="${1#*=}"
@@ -47,19 +53,24 @@ done
 cd
 
 # Input validation.
-if [[ -z "${INPUT_PATH}.${LANGUAGE}" ]]; then
-  echo "Input file nonexistent!" && exit 1
+if [[ -z "${CORPUS_PREFIX}.${LANGUAGE}" ]]; then
+  echo "\${CORPUS_PREFIX}.\${LANGUAGE}: ${CORPUS_PREFIX}.${LANGUAGE} nonexistent!" && exit 1
 fi
 if [[ -d "${WORK_DIR}" ]]; then
-  echo "Work directory must be nonexistent." && exit 1
+  echo "\${WORK_DIR}: ${WORK_DIR} exists." && exit 1
+fi
+if [[ "${EXTENSION}" == "${LANGUAGE}" ]] ||
+    [[ "${EXTENSION}" == "split" ]] ||
+    [[ "${LANGUAGE}" == "split" ]]; then
+  echo "Extension and Language must be nonequal, and neither can be 'split'." && exit 1
 fi
 
 # Make operations visible to user.
 set -o xtrace
 
 mkdir -p "${WORK_DIR}"
-cp "${INPUT_PATH}.${LANGUAGE}" "${WORK_DIR}" || exit 1
-WORK_DIR_CORPUS="${WORK_DIR}/$(basename ${INPUT_PATH}.${LANGUAGE})"
+cp "${CORPUS_PREFIX}.${LANGUAGE}" "${WORK_DIR}" || exit 1
+WORK_DIR_CORPUS="${WORK_DIR}/$(basename ${CORPUS_PREFIX}.${LANGUAGE})"
 sed -i 's/\./ /g' "${WORK_DIR_CORPUS}" || exit 1
 sed -i ':a;N;$!ba;s/\n/\.\n/g' "${WORK_DIR_CORPUS}" || exit 1
 
@@ -89,11 +100,14 @@ java \
   || exit 1
 
 
-FINAL="${WORK_DIR}/$(basename ${INPUT_PATH}).${EXTENSION}.${LANGUAGE}"
+FINAL="${WORK_DIR}/$(basename ${CORPUS_PREFIX}).${EXTENSION}.${LANGUAGE}"
 
 cat ${WORK_DIR}/tmp-*.${EXTENSION} > "${FINAL}"
 
 sed -i ':a;N;$!ba;s/\./\n/g' "${FINAL}"
 sed -i ':a;N;$!ba;s/\n\n/\n/g' "${FINAL}"
 
-cp "${FINAL}" "$(dirname ${INPUT_PATH})"
+cp "${FINAL}" "$(dirname ${CORPUS_PREFIX})"
+
+# TODO: delete work directory after testin.
+# rm -r "${WORK_DIR}"
