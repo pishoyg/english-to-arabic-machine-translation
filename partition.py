@@ -3,17 +3,27 @@ import random
 
 parser = argparse.ArgumentParser(description='Split dataset into partitions.')
 parser.add_argument(
-  '--input',
-  type=str,
-  help='Input path.',
-  required=True
+    '--corpus_prefix',
+    type=str,
+    required=True,
+    help='Corpora prefix. '
+    'The input path will be "<corpus_prefix>.<lang_extension>.<lang>", '
+    'and the output path will be "<corpus_prefix>.<lang_extension>.<partition>.<lang>". '
+    'If any field is missing, it will be ignored.'
 )
 parser.add_argument(
-  '--langs',
-  type=str,
-  help='Language suffixes.',
-  nargs=2,
-  default=['ara', 'eng']
+    '--lang_extensions',
+    type=str,
+    help='Language extensions. See documentation of --corpus_prefix for details.',
+    nargs=2,
+    default=['stanford', '']
+)
+parser.add_argument(
+    '--langs',
+    type=str,
+    help='Language suffixes. See documentation of --corpus_prefix for details.',
+    nargs=2,
+    default=['ara', 'eng']
 )
 parser.add_argument(
   '--partitions',
@@ -31,13 +41,15 @@ parser.add_argument(
 )
 args = parser.parse_args()
 is_valid_prop = lambda x: x >= 0.0 and x <= 1.0
+assert len(args.langs) == len(args.lang_extensions)
 assert len(args.partitions) == len(args.partition_distributions)
 assert all(is_valid_prop(p) for p in args.partition_distributions)
 args.partition_distributions = {partition: prop for partition, prop in zip(args.partitions, args.partition_distributions)}
+args.lang_extensions = {lang: lang_extension for lang, lang_extension in zip(args.langs, args.lang_extensions)}
 
 corpora = dict()
 for lang in args.langs:
-  with open('.'.join([args.input, lang])) as input_file:
+  with open('.'.join(filter(None, [args.corpus_prefix, args.lang_extensions[lang], lang]))) as input_file:
     corpora[lang] = input_file.read().split('\n')
 corpora = list(zip(*[corpora[lang] for lang in args.langs]))
 random.shuffle(corpora)
@@ -63,5 +75,5 @@ for lang_sentences in corpora:
 for partition_lang_tuple, partition_lang_output in output.items():
   partition = partition_lang_tuple[0]
   lang = partition_lang_tuple[1]
-  with open('.'.join([args.input, partition] + [lang]), 'w') as output_file:
+  with open('.'.join(filter(None, [args.corpus_prefix, args.lang_extensions[lang], partition, lang])), 'w') as output_file:
     output_file.write('\n'.join(partition_lang_output))
