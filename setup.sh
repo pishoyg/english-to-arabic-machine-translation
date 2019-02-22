@@ -25,7 +25,11 @@ done
 # Make operations visible to user.
 set -o xtrace
 
-pip3 install tensorflow tf-nightly tf-nightly-gpu
+pip3 install \
+  tensorflow \
+  tf-nightly \
+#  tensorflow-gpu \
+#  tf-nightly-gpu
 
 # english-to-arabic-machine-translation.
 EAMT="${HOME}/english-to-arabic-machine-translation"
