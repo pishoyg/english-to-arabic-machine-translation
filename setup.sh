@@ -25,12 +25,16 @@ done
 # Make operations visible to user.
 set -o xtrace
 
-pip3 install tf-nightly tf-nightly-gpu
+pip3 install tensorflow tf-nightly tf-nightly-gpu
 
 # english-to-arabic-machine-translation.
-if [[ ! -d "${HOME}/english-to-arabic-machine-translation" ]]; then
+EAMT="${HOME}/english-to-arabic-machine-translation"
+if [[ ! -d "${EAMT}" ]]; then
   git clone https://github.com/bishoyboshra/english-to-arabic-machine-translation.git
 fi
+cd "${EAMT}"
+git pull origin master
+cd
 
 # GitHub account (optional).
 if [[ ! -z ${GIT_USER_EMAIL} ]]; then
@@ -52,11 +56,14 @@ fi
 
 # email_specs.json.
 if [[ ! -f "${HOME}/email_specs.json" ]]; then
-  echo "Please create email specs!"
+  echo "Please create email specs!" && MISSING_DATA=true
 fi
 
 # corpora.
 if [[ ! -d "${HOME}/corpora" ]]; then
-  echo "Please obtain corpora!"
+  echo "Please obtain corpora!"  && MISSING_DATA=true
 fi
 
+if [[ -z "${MISSING_DATA}" ]]; then
+  echo "SUCCESS"
+fi
