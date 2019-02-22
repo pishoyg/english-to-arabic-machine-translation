@@ -159,8 +159,9 @@ combine_if_non_empty() {
 }
 
 # Assign a meaningful name to the output directory.
-OUT_DIR="${HOME}/models/$(basename ${CORPUS_PREFIX})\
-_${SRC}-${SRC_EXTENSION}-${SRC_V}
+OUT_DIR="${HOME}/models/\
+$(basename ${CORPUS_PREFIX})\
+_${SRC}-${SRC_EXTENSION}-${SRC_V}\
 _${TGT}-${TGT_EXTENSION}-${TGT_V}\
 _${NUM_LAYERS}x${NUM_UNITS}-${UNIT_TYPE}\
 _${OPTIMIZER}-${LEARNING_RATE}-${NUM_TRAIN_STEPS}$(combine_if_non_empty - ${DECAY_SCHEME})\
@@ -173,33 +174,28 @@ $(combine_if_non_empty _SW- ${SUBWORD_OPTION})\
 $(combine_if_non_empty _EM- $(basename ${EMBED_PREFIX}))\
 $(combine_if_non_empty $([[ ${AVG_CKPTS} = 'true' ]] && echo _AVG- || echo '') ${NUM_KEEP_CKPTS})"
 
-# Set Python version based on OS release.
-if [[ $(cat /etc/os-release | grep 'VERSION_ID' | grep -o '[[:digit:]]*\.[[:digit:]]*') == "18.04" ]]; then
-  THREE="3"
-else
-  THREE=""
-fi
-
 # Make operations visible to user.
 set -o xtrace
 
 # Set up directory and datasets.
-mkdir -p ${OUT_DIR}/data || exit
+mkdir -p ${OUT_DIR}/data || exit 1
 DATA_PREFIX="${OUT_DIR}/data/$(basename ${CORPUS_PREFIX})"
-if [[ ! -f ${DATA_PREFIX}.vocab-head.${SRC} ]]; then
-  head -${SRC_V} ${CORPUS_PREFIX}.vocab.${SRC} > ${DATA_PREFIX}.vocab-head.${SRC} || exit
-fi
-if [[ ! -f ${DATA_PREFIX}.vocab-head.${TGT} ]]; then
-  head -${TGT_V} ${CORPUS_PREFIX}.vocab.${TGT} > ${DATA_PREFIX}.vocab-head.${TGT} || exit
-fi
-for LANGUAGE in "${SRC}" "${TGT}"; do
+for LANG_SIDE in SRC TGT; do
+  LANGUAGE="${!LANG_SIDE}"
+  LANGUAGE_EXTENSION="${LANG_SIDE}_EXTENSION"
+  LANGUAGE_EXTENSION="${!LANGUAGE_EXTENSION}"
+  LANGUAGE_V="${LANG_SIDE}_V"
+  LANGUAGE_V="${!LANGUAGE_V}"
+  if [[ ! -f "${DATA_PREFIX}.vocab-head.${LANGUAGE}" ]]; then
+    head -${TGT_V} "${CORPUS_PREFIX}.${LANGUAGE_EXTENSION}.vocab.${LANGUAGE}" > "${DATA_PREFIX}.vocab-head.${LANGUAGE}" || exit 1
+  fi
   for PARTITION in "train" "dev" "test"; do
-    cp --no-clobber ${CORPUS_PREFIX}.clean.${PARTITION}.${LANGUAGE} ${OUT_DIR}/data/ || exit
+    cp --no-clobber "${CORPUS_PREFIX}.${LANGUAGE_EXTENSION}.${PARTITION}.${LANGUAGE}" "${DATA_PREFIX}.${PARTITION}.${LANGUAGE}" || exit 1
   done
 done
 
 # Construct train command.
-COMMAND="python${THREE} -m nmt.nmt.nmt \\
+COMMAND="python3 -m nmt.nmt.nmt \\
   --src=${SRC} \\
   --tgt=${TGT} \\
   --out_dir=${OUT_DIR} \\

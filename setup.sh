@@ -1,5 +1,8 @@
-# TODO: Retrieve Stanford CoreNLP.
-# TODO: Retrieve english-to-arabic-machine-translation.
+# Rather-personalized script for setting up work environment.
+# WARNING: This is not meant for generic use. It's rather a guide
+#          pointing out to what your machine should have in order
+#          to be able to run training.
+
 
 # Go to home directory.
 cd
@@ -22,17 +25,7 @@ done
 # Make operations visible to user.
 set -o xtrace
 
-pip install tf-nightly tf-nightly-gpu
-
-# email_specs.json.
-if [[ ! -f "${HOME}/email_specs.json" ]]; then
-  echo "Please create email specs!" && exit 1
-fi
-
-# corpora.
-if [[ ! -d "${HOME}/corpora" ]]; then
-  echo "Please obtain corpora!" && exit 1
-fi
+pip3 install tf-nightly tf-nightly-gpu
 
 # english-to-arabic-machine-translation.
 if [[ ! -d "${HOME}/english-to-arabic-machine-translation" ]]; then
@@ -56,3 +49,14 @@ NMT_INIT="${HOME}/nmt/__init__.py"
 if [[ ! -f  "${NMT_INIT}" ]]; then
   touch "${NMT_INIT}"
 fi
+
+# email_specs.json.
+if [[ ! -f "${HOME}/email_specs.json" ]]; then
+  echo "Please create email specs!"
+fi
+
+# corpora.
+if [[ ! -d "${HOME}/corpora" ]]; then
+  echo "Please obtain corpora!"
+fi
+

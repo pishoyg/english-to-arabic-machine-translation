@@ -16,7 +16,7 @@ parser.add_argument(
     type=str,
     help='Language extensions. See documentation of --corpus_prefix for details.',
     nargs=2,
-    default=['stanford', '']
+    default=['stanford.clean', 'clean']
 )
 parser.add_argument(
     '--langs',
