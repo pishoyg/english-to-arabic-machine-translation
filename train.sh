@@ -229,7 +229,12 @@ COMMAND="python3 -m nmt.nmt.nmt \\
 echo "${COMMAND}" > "${OUT_DIR}/command.txt"
 
 # Start background jobs.
-tensorboard \
+if [[ ! -z $(command -v tensorboard) ]]; then
+  TENSORBOARD="tensorboard"
+else
+  TENSORBOARD="python3 $(pip3 show tensorflow | grep 'Location' | grep -o '/.*')/tensorboard/main.py"
+fi
+${TENSORBOARD} \
   --port="${TENSORBOARD_PORT}" \
   --logdir="${OUT_DIR}" \
   &
