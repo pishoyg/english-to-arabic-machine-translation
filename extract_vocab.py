@@ -1,6 +1,7 @@
 import argparse
 from itertools import chain
 from collections import Counter
+import matplotlib.pyplot as plt
 
 # Arguments.
 parser = argparse.ArgumentParser(description=
@@ -22,16 +23,25 @@ parser.add_argument(
     '--lang_extensions',
     type=str,
     help='Language extensions. See documentation of --corpus_prefix for details.',
-    nargs=2,
+    nargs='+',
     default=['stanford.clean', 'clean']
 )
 parser.add_argument(
     '--langs',
     type=str,
     help='Language suffixes. See documentation of --corpus_prefix for details.',
-    nargs=2,
+    nargs='+',
     default=['ara', 'eng']
 )
+parser.add_argument(
+    '--freq_delim',
+    type=str,
+    help='String to use as a delimiter between words and their respective '
+    'counts in the frequency file.',
+    nargs=1,
+    default=' '
+)
+
 args = parser.parse_args()
 assert len(args.langs) == len(args.lang_extensions)
 args.lang_extensions = {lang: lang_extension for lang, lang_extension in zip(args.langs, args.lang_extensions)}
@@ -48,15 +58,16 @@ for lang in args.langs:
   # Extract Info.
   print('Extracting Vocabulary.')
   vocab_freq = dict(Counter(chain.from_iterable(map(lambda sentence: sentence.split(), corpus))))
-  print('Sorting vocab by frequency.')
-  sorted_vocab = sorted(list(vocab_freq.keys()), key=lambda word: vocab_freq[word], reverse=True)
   print('Listing alphabet.')
-  alphabet = sorted(list(set(c for word in sorted_vocab for c in word)))
+  alphabet = sorted(list(set(c for word in vocab_freq for c in word)))
+  print('Sorting vocab by frequency.')
+  vocab_freq = sorted(vocab_freq.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
   print('Writing info.')
   # Write info.
   for name, info in [
     ('alphabet', alphabet),
-    ('vocab', sorted_vocab),
-    ('freq', map(lambda word: word + ' ' + str(vocab_freq[word]), sorted_vocab))]:
+    ('vocab', map(lambda kv: kv[0], vocab_freq)),
+    ('freq', map(lambda kv: args.freq_delim.join((kv[0], str(kv[1]))), vocab_freq))]:
     with open('.'.join(filter(None, [args.corpus_prefix, lang_extension, name, lang])), 'w') as output_file:
       output_file.write('\n'.join(info))
+

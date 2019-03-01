@@ -28,6 +28,7 @@ set -o xtrace
 pip3 install \
   tensorflow \
   tf-nightly \
+  matplotlib
 #  tensorflow-gpu \
 #  tf-nightly-gpu
 
