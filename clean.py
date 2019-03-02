@@ -7,7 +7,8 @@ from collections import Counter
 parser = argparse.ArgumentParser(description=
   'Read corpora, and generate a cleaned version of it. '
   'Notice that for every language suffix specified in args.langs, '
-  'a corresponding cleaner must be available from lang_cleaner.py.'
+  'a corresponding cleaner must be available from lang_cleaner.py.',
+  formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
 parser.add_argument(
     '--corpus_prefix',

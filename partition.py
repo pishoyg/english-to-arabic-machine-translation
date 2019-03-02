@@ -1,7 +1,9 @@
 import argparse
 import random
 
-parser = argparse.ArgumentParser(description='Split dataset into partitions.')
+parser = argparse.ArgumentParser(
+    description='Split dataset into partitions.',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     '--corpus_prefix',
     type=str,

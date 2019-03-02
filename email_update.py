@@ -6,7 +6,8 @@ import smtplib, ssl
 
 # Define arguments.
 parser = argparse.ArgumentParser(description=
-  'Periodically send email updates on witnessed improvement in BLEU score.'
+  'Periodically send email updates on witnessed improvement in BLEU score.',
+  formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
 parser.add_argument(
   '--out_dir',

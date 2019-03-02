@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 
 # Arguments.
 parser = argparse.ArgumentParser(description=
-  'Generate frequency plots.'
+  'Generate frequency plots.',
+  formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
 
 parser.add_argument(

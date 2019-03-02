@@ -8,7 +8,8 @@ parser = argparse.ArgumentParser(description=
   'Read corpora, and generate'
   ' (1) Vocabulary file, sorted by frequency.'
   ' (2) Alphabet file.'
-  ' (3) Frequencey file, containing frequencies of each word. '
+  ' (3) Frequencey file, containing frequencies of each word. ',
+  formatter_class=argparse.ArgumentDefaultsHelpFormatter
 )
 parser.add_argument(
     '--corpus_prefix',
