@@ -27,9 +27,9 @@ parser.add_argument(
     '--plot_windows',
     type=str,
     help='Plot windows. Will plot a histogram for word frequencies '
-    'for each prefix of length <plot_window> from the descendingly '
-    'sorted vocab array. A value of zero indicates printing the entire '
-    'vocab.',
+    'for each given subrange of the descendingly sorted vocab list. '
+    'A value of zero on the left/right side indicates the absence of '
+    'a lower/upper bound.',
     nargs='+',
     default=['0:40000']
 )
@@ -65,7 +65,6 @@ def main():
         freq_file.read().split('\n')
       )
     )
-  max_freq = max(histogram)
   for plot_window in args.plot_windows:
     s, e = list(map(int, plot_window.split(':')))
     assert s <= e
