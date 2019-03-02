@@ -1,8 +1,10 @@
 import argparse
+import datetime
 import json
 import os
 import time
 import smtplib, ssl
+
 
 # Define arguments.
 parser = argparse.ArgumentParser(description=
@@ -63,17 +65,21 @@ def get_cur_metrics():
       assert line.startswith('model_checkpoint_path: ')
       line = line[23:None]
       assert line.startswith('"') and line.endswith('"')
-      line = os.path.basename(line[1:-1])
+      line = line[1:-1]
+      stamp = str(datetime.datetime.fromtimestamp(os.path.getmtime(line + '.meta')))
+      line = os.path.basename(line)
       assert line.startswith('translate.ckpt-')
-      return int(line[15:])  
+      return int(line[15:]), stamp
     except:
       raise ValueError('Unable to locate/ parse checkpoint file.')
 
   def get_best_bleu_info(name='best_bleu'):
-    return '{name}: {val}, Steps: {steps}'.format(
+    steps, stamp = get_checkpoint_steps(params[name + '_dir'])
+    return '{name}: {val}, steps: {steps}, stamp: {stamp}'.format(
         name=name,
         val='%.2f' % params[name],
-        steps=str(get_checkpoint_steps(params[name + '_dir'])/1000) + 'K'
+        steps=str(steps/1000) + 'K',
+        stamp=stamp
     )
 
   metrics = get_best_bleu_info('best_bleu')
