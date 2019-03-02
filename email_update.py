@@ -74,13 +74,19 @@ def get_cur_metrics():
       raise ValueError('Unable to locate/ parse checkpoint file.')
 
   def get_best_bleu_info(name='best_bleu'):
-    steps, stamp = get_checkpoint_steps(params[name + '_dir'])
-    return '{name}: {val}, steps: {steps}, stamp: {stamp}'.format(
+    info = '{name}: {val}'.format(
         name=name,
         val='%.2f' % params[name],
+    )
+    try:
+      steps, stamp = get_checkpoint_steps(params[name + '_dir'])
+      info += ', steps: {steps}, stamp: {stamp}'.format(
         steps=str(steps/1000) + 'K',
         stamp=stamp
-    )
+      )
+    except:
+      pass
+    return info
 
   metrics = get_best_bleu_info('best_bleu')
   if 'avg_best_bleu' in params:
@@ -107,7 +113,7 @@ def main():
   prev_metrics = None
   server = server_login()
   while True:
-    time.sleep(args.period)
+    # time.sleep(args.period)
     message = None
     try:
       cur_metrics = get_cur_metrics()
