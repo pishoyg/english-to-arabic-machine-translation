@@ -21,7 +21,8 @@ parser.add_argument(
   type=str,
   nargs=1,
   default='email_specs.json',
-  help='JSON file containing email specs.'
+  help='JSON file containing email specs. This should define three fields: '
+  '"sender_email", "password", "receiver_emails".'
 )
 parser.add_argument(
   '--period',
@@ -51,13 +52,34 @@ def preprocess_arguments():
     del args.email_specs
 
 # Helper methods.
-def get_cur_bleu():
+def get_cur_metrics():
   with open(args.hparams) as hparams:
     params = json.loads(hparams.read())
-    best_bleu = '%.2f' % params['best_bleu']
-    if 'avg_best_bleu' in params:
-      best_bleu = best_bleu + '\nAVG:%.2f' % params['avg_best_bleu']
-  return best_bleu
+
+  def get_checkpoint_steps(best_bleu_dir):
+    with open(os.path.join(best_bleu_dir, 'checkpoint')) as checkpoint_file:
+      line = checkpoint_file.readline().strip()
+    try:
+      assert line.startswith('model_checkpoint_path: ')
+      line = line[23:None]
+      assert line.startswith('"') and line.endswith('"')
+      line = os.path.basename(line[1:-1])
+      assert line.startswith('translate.ckpt-')
+      return int(line[15:])  
+    except:
+      raise ValueError('Unable to locate/ parse checkpoint file.')
+
+  def get_best_bleu_info(name='best_bleu'):
+    return '{name}: {val}, Steps: {steps}'.format(
+        name=name,
+        val='%.2f' % params[name],
+        steps=str(get_checkpoint_steps(params[name + '_dir'])/1000) + 'K'
+    )
+
+  metrics = get_best_bleu_info('best_bleu')
+  if 'avg_best_bleu' in params:
+    metrics = metrics + '\n' + get_best_bleu_info('avg_best_bleu')
+  return metrics
 
 def server_login():
   server = smtplib.SMTP_SSL(
@@ -76,16 +98,16 @@ def server_send(server, message):
 
 def main():
   preprocess_arguments()
-  last_bleu = None
+  prev_metrics = None
   server = server_login()
   while True:
     time.sleep(args.period)
     message = None
     try:
-      cur_bleu = get_cur_bleu()
-      if cur_bleu != last_bleu:
-        last_bleu = cur_bleu
-        message = cur_bleu
+      cur_metrics = get_cur_metrics()
+      if cur_metrics != prev_metrics:
+        prev_metrics = cur_metrics
+        message = cur_metrics
     except Exception as e:
       message = str(e)
     if message:
