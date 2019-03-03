@@ -17,28 +17,28 @@ parser.add_argument(
     '--lang_extensions',
     type=str,
     help='Language extensions. See documentation of --corpus_prefix for details.',
-    nargs=2,
+    nargs='+',
     default=['stanford.clean', 'clean']
 )
 parser.add_argument(
     '--langs',
     type=str,
     help='Language suffixes. See documentation of --corpus_prefix for details.',
-    nargs=2,
+    nargs='+',
     default=['ara', 'eng']
 )
 parser.add_argument(
   '--partitions',
   type=str,
   help='Partitions.',
-  nargs=3,
+  nargs='+',
   default=['train', 'dev', 'test']
 )
 parser.add_argument(
   '--partition_distributions',
   type=float,
   help='Partition distributions.',
-  nargs=3,
+  nargs='+',
   default=[0.9, 0.95, 1.0]
 )
 args = parser.parse_args()

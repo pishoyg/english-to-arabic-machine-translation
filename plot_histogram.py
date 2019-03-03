@@ -21,7 +21,6 @@ parser.add_argument(
     type=str,
     help='String used as a delimiter between words and their respective '
     'counts in the frequency file.',
-    nargs=1,
     default=' '
 )
 parser.add_argument(
@@ -38,21 +37,24 @@ parser.add_argument(
     '--curb_freq',
     type=int,
     help='Curb frequency.',
-    nargs=1,
     default=1000
+)
+parser.add_argument(
+    '--format',
+    type=str,
+    help='Image format.',
+    default='jpg'
 )
 parser.add_argument(
     '--x_step',
     type=int,
     help='Grid step on the x-axis.',
-    nargs=1,
     default=4000
 )
 parser.add_argument(
     '--y_step',
     type=int,
     help='Grid step on the y-axis.',
-    nargs=1,
     default=50
 )
 
@@ -83,7 +85,7 @@ def main():
     plt.grid(True)
     # Save and clear.
     plt.savefig('.'.join(filter(None,
-        [args.freq_path, 'histogram', plot_window.replace(args.delim, '-'), 'jpg']
+        [args.freq_path, 'histogram', plot_window.replace(args.delim, '-'), args.format]
     )))
     plt.clf()
 

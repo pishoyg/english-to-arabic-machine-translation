@@ -15,13 +15,11 @@ parser.add_argument(
   '--out_dir',
   type=str,
   required=True,
-  nargs=1,
   help='Training output directory.'
 )
 parser.add_argument(
   '--email_specs',
   type=str,
-  nargs=1,
   default='email_specs.json',
   help='JSON file containing email specs. This should define three fields: '
   '"sender_email", "password", "receiver_emails".'
@@ -29,7 +27,6 @@ parser.add_argument(
 parser.add_argument(
   '--period',
   type=int,
-  nargs=1,
   default=60,
   help='Check on currrent best-bleu every <period> seconds.'
 )
@@ -38,13 +35,6 @@ args = parser.parse_args()
 
 # Preprocess arguments.
 def preprocess_arguments():
-  for attr_name in ['out_dir', 'email_specs']:
-    attr_val = getattr(args, attr_name)
-    if isinstance(attr_val, list):
-      assert len(attr_val) == 1
-      setattr(args, attr_name, attr_val[0])
-    else:
-      assert isinstance(attr_val, str)
   setattr(args, 'name', os.path.basename(os.path.normpath(args.out_dir)))
   setattr(args, 'hparams', os.path.join(args.out_dir, 'hparams'))
   with open(args.email_specs) as email_specs:
@@ -113,7 +103,7 @@ def main():
   prev_metrics = None
   server = server_login()
   while True:
-    # time.sleep(args.period)
+    time.sleep(args.period)
     message = None
     try:
       cur_metrics = get_cur_metrics()

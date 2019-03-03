@@ -23,14 +23,14 @@ parser.add_argument(
     '--lang_extensions',
     type=str,
     help='Language extensions. See documentation of --corpus_prefix for details.',
-    nargs=2,
+    nargs='+',
     default=['stanford', '']
 )
 parser.add_argument(
     '--langs',
     type=str,
     help='Language suffixes. See documentation of --corpus_prefix for details.',
-    nargs=2,
+    nargs='+',
     default=['ara', 'eng']
 )
 args = parser.parse_args()

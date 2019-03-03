@@ -39,7 +39,6 @@ parser.add_argument(
     type=str,
     help='String to use as a delimiter between words and their respective '
     'counts in the frequency file.',
-    nargs=1,
     default=' '
 )
 
