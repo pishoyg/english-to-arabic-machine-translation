@@ -41,33 +41,39 @@ parser.add_argument(
     'counts in the frequency file.',
     default=' '
 )
-
 args = parser.parse_args()
-assert len(args.langs) == len(args.lang_extensions)
-args.lang_extensions = {lang: lang_extension for lang, lang_extension in zip(args.langs, args.lang_extensions)}
 
-for lang in args.langs:
-  lang_extension = args.lang_extensions[lang]
-  print('Processing language %s.' % lang)
+def preprocess_args():
+  assert len(args.langs) == len(args.lang_extensions)
+  args.lang_extensions = {lang: lang_extension for lang, lang_extension in zip(args.langs, args.lang_extensions)}
 
-  # Read Corpus.
-  print('Reading corps.')
-  with open('.'.join(filter(None, [args.corpus_prefix, lang_extension, lang]))) as input_file:
-    corpus = input_file.read().split('\n')
+def main():
+  preprocess_args()
+  for lang in args.langs:
+    lang_extension = args.lang_extensions[lang]
+    print('Processing language %s.' % lang)
 
-  # Extract Info.
-  print('Extracting Vocabulary.')
-  vocab_freq = dict(Counter(chain.from_iterable(map(lambda sentence: sentence.split(), corpus))))
-  print('Listing alphabet.')
-  alphabet = sorted(list(set(c for word in vocab_freq for c in word)))
-  print('Sorting vocab by frequency.')
-  vocab_freq = sorted(vocab_freq.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
-  print('Writing info.')
-  # Write info.
-  for name, info in [
-    ('alphabet', alphabet),
-    ('vocab', map(lambda kv: kv[0], vocab_freq)),
-    ('freq', map(lambda kv: args.freq_delim.join((kv[0], str(kv[1]))), vocab_freq))]:
-    with open('.'.join(filter(None, [args.corpus_prefix, lang_extension, name, lang])), 'w') as output_file:
-      output_file.write('\n'.join(info))
+    # Read Corpus.
+    print('Reading corps.')
+    with open('.'.join(filter(None, [args.corpus_prefix, lang_extension, lang]))) as input_file:
+      corpus = input_file.read().split('\n')
+
+    # Extract Info.
+    print('Extracting Vocabulary.')
+    vocab_freq = dict(Counter(chain.from_iterable(map(lambda sentence: sentence.split(), corpus))))
+    print('Listing alphabet.')
+    alphabet = sorted(list(set(c for word in vocab_freq for c in word)))
+    print('Sorting vocab by frequency.')
+    vocab_freq = sorted(vocab_freq.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
+    print('Writing info.')
+    # Write info.
+    for name, info in [
+      ('alphabet', alphabet),
+      ('vocab', map(lambda kv: kv[0], vocab_freq)),
+      ('freq', map(lambda kv: args.freq_delim.join((kv[0], str(kv[1]))), vocab_freq))]:
+      with open('.'.join(filter(None, [args.corpus_prefix, lang_extension, name, lang])), 'w') as output_file:
+        output_file.write('\n'.join(info))
+
+if __name__ == '__main__':
+  main()
 

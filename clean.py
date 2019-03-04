@@ -37,11 +37,16 @@ args = parser.parse_args()
 
 assert len(args.lang_extensions) == len(args.langs)
 
-for lang, lang_extension in zip(args.langs, args.lang_extensions):
-  print('Processing language %s.' % lang)
-  input_file = '.'.join(filter(None, [args.corpus_prefix, lang_extension, lang]))
-  output_file = '.'.join(filter(None, [args.corpus_prefix, lang_extension, 'clean', lang]))
-  with open(input_file) as input_file:
-    cleaned_corpus = map(lang_to_cleaner[lang].clean, input_file.read().split('\n'))
-  with open(output_file, 'w') as output_file:
-    output_file.write('\n'.join(cleaned_corpus))
+def main():
+  for lang, lang_extension in zip(args.langs, args.lang_extensions):
+    print('Processing language %s.' % lang)
+    input_file = '.'.join(filter(None, [args.corpus_prefix, lang_extension, lang]))
+    output_file = '.'.join(filter(None, [args.corpus_prefix, lang_extension, 'clean', lang]))
+    with open(input_file) as input_file:
+      cleaned_corpus = map(lang_to_cleaner[lang].clean, input_file.read().split('\n'))
+    with open(output_file, 'w') as output_file:
+      output_file.write('\n'.join(cleaned_corpus))
+
+if __name__ == '__main__':
+  main()
+
