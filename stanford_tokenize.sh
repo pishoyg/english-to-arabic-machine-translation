@@ -109,5 +109,5 @@ sed -i ':a;N;$!ba;s/\n\n/\n/g' "${FINAL}"
 
 cp "${FINAL}" "$(dirname ${CORPUS_PREFIX})"
 
-# TODO: delete work directory after testin.
-# rm -r "${WORK_DIR}"
+rm -r "${WORK_DIR}"
+
