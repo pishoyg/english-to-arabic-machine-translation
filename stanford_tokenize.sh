@@ -7,6 +7,8 @@ MODEL="stanford-arabic-corenlp-2018-10-05-models/edu/stanford/nlp/models/segment
 CORPUS_PREFIX=""
 # Language extension.
 LANGUAGE="ara"
+# Language extension according to the Stanford CoreNLP program.
+TOKENIZE_LANGUAGE="ar"
 # Temporary work directory.
 WORK_DIR="/tmp/tmp"
 # Output extension.
@@ -26,6 +28,9 @@ while [ $# -gt 0 ]; do
       ;;
     --language=*)
       LANGUAGE="${1#*=}"
+      ;;
+    --tokenize_language=*)
+      TOKENIZE_LANGUAGE="${1#*=}"
       ;;
     --work_dir=*)
       WORK_DIR="${1#*=}"
@@ -93,7 +98,7 @@ java \
   -outputDirectory "${WORK_DIR}" \
   -output.columns word \
   -annotators tokenize,ssplit \
-  -tokenize.language ar \
+  -tokenize.language "${TOKENIZE_LANGUAGE}" \
   -ssplit.eolonly true \
   -segment.model "${MODEL}" \
   -replaceExtension true \
