@@ -43,10 +43,9 @@ def main():
     input_file = '.'.join(filter(None, [args.corpus_prefix, lang_extension, lang]))
     output_file = '.'.join(filter(None, [args.corpus_prefix, lang_extension, 'clean', lang]))
     with open(input_file) as input_file:
-      cleaned_corpus = map(lang_to_cleaner[lang].clean, input_file.read().split('\n'))
-    with open(output_file, 'w') as output_file:
-      output_file.write('\n'.join(cleaned_corpus))
+      with open(output_file, 'w') as output_file:
+        for clean_line in map(lang_to_cleaner[lang].clean, input_file):
+          output_file.write(clean_line + '\n')
 
 if __name__ == '__main__':
   main()
-

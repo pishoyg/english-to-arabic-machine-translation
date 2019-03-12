@@ -25,9 +25,7 @@ class _ArabicCleaner(_LangCleaner):
     for search_i, replace_i in self.replace_pairs:
       text = text.replace(search_i, replace_i)
     text = text.replace('وو', 'و').replace('يي', 'ي').replace('اا', 'ا')
-    text = self.non_ara_re.sub(' ', text)
-    text = text.strip()
-    return text
+    return self.non_ara_re.sub(' ', text).strip()
 
 
 class _EnglishCleaner(_LangCleaner):
@@ -36,10 +34,7 @@ class _EnglishCleaner(_LangCleaner):
     self.non_eng_re = re.compile('[^a-z]+')
 
   def clean(self, text):
-    text = text.lower()
-    text = self.non_eng_re.sub(' ', text)
-    text = text.strip()
-    return text
+    return self.non_eng_re.sub(' ', text.lower()).strip()
 
 
 _arabic_cleaner = _ArabicCleaner()
