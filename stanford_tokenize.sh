@@ -80,6 +80,7 @@ sed -i 's/\./ /g' "${WORK_DIR_CORPUS}" || exit 1
 sed -i ':a;N;$!ba;s/\n/\.\n/g' "${WORK_DIR_CORPUS}" || exit 1
 
 split \
+  --numeric-suffixes=0 \
   --suffix-length=7 \
   --additional-suffix=".split" \
   --lines=1000 \
