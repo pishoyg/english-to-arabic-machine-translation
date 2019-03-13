@@ -32,13 +32,13 @@ done
 
 # Input validation.
 if [[ -d "${WORK_DIR}" ]]; then
-  echo "\${WORK_DIR}: ${WORK_DIR} exists." && exit 1
+  echo "WARNING: \${WORK_DIR}: ${WORK_DIR} exists."
+else
+  mkdir -p "${WORK_DIR}" || exit 1
 fi
 
 # Make operations visible to user.
 set -o xtrace
-
-mkdir -p "${WORK_DIR}" || exit 1
 
 split \
   --numeric-suffixes=0 \
@@ -49,10 +49,11 @@ split \
   "${WORK_DIR}/tmp-" \
    || exit 1
 
+# TODO: add a flag to decide on whether to overwrite existing output.
 for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
   OUT_CHUNK="${CHUNK}.inference"
   if [[ ! -f ${OUT_CHUNK} ]] ||
-      [[ $(wc ${OUT_CHUNK} | awk '{print $1}') != "${CHUNK_SIZE}" ]]; then
+      [[ $(wc ${OUT_CHUNK} | awk '{print $1}') != $(wc ${CHUNK} | awk '{print $1}') ]]; then
     python3 -m nmt.nmt.nmt \
       --out_dir="${OUT_DIR}" \
       --inference_input_file="${CHUNK}" \
@@ -63,5 +64,5 @@ done
 
 cat ${WORK_DIR}/tmp-*.split.inference > "${INFERENCE_OUTPUT_FILE}" || exit 1
 
-# TODO: Execute deletion of work directory after testing code.
+# TODO: Arrange for the deletion of the work directory.
 # rm -r "${WORK_DIR}"
