@@ -1,7 +1,6 @@
 import argparse
 from itertools import chain
 from collections import Counter
-import matplotlib.pyplot as plt
 
 # Arguments.
 parser = argparse.ArgumentParser(description=
@@ -53,22 +52,16 @@ def main():
     lang_extension = args.lang_extensions[lang]
     print('Processing language %s.' % lang)
 
-    # Read Corpus.
-    print('Reading corps.')
-    with open('.'.join(filter(None, [args.corpus_prefix, lang_extension, lang]))) as input_file:
-      corpus = input_file.read().split('\n')
-
     # Extract Info.
     print('Extracting Vocabulary.')
-    vocab_freq = dict(Counter(chain.from_iterable(map(lambda sentence: sentence.split(), corpus))))
-    print('Listing alphabet.')
-    alphabet = sorted(list(set(c for word in vocab_freq for c in word)))
+    with open('.'.join(filter(None, [args.corpus_prefix, lang_extension, lang]))) as input_file:
+      vocab_freq = dict(Counter(chain.from_iterable(map(lambda sentence: sentence.split(), input_file))))
     print('Sorting vocab by frequency.')
     vocab_freq = sorted(vocab_freq.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
     print('Writing info.')
     # Write info.
     for name, info in [
-      ('alphabet', alphabet),
+      ('alphabet', sorted(list(set(c for word, _ in vocab_freq for c in word)))),
       ('vocab', map(lambda kv: kv[0], vocab_freq)),
       ('freq', map(lambda kv: args.freq_delim.join((kv[0], str(kv[1]))), vocab_freq))]:
       with open('.'.join(filter(None, [args.corpus_prefix, lang_extension, name, lang])), 'w') as output_file:
@@ -76,4 +69,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-
