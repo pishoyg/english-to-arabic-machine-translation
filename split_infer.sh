@@ -54,6 +54,7 @@ for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
   OUT_CHUNK="${CHUNK}.inference"
   if [[ ! -f ${OUT_CHUNK} ]] ||
       [[ $(wc ${OUT_CHUNK} | awk '{print $1}') != $(wc ${CHUNK} | awk '{print $1}') ]]; then
+    sed -i 's/^$/<unk>/g' "${CHUNK}"
     python3 -m nmt.nmt.nmt \
       --out_dir="${OUT_DIR}" \
       --inference_input_file="${CHUNK}" \
