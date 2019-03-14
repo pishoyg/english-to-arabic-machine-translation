@@ -10,11 +10,19 @@ parser = argparse.ArgumentParser(description=
 )
 
 parser.add_argument(
-    '--freq_path',
+    '--ref_freq_path',
     type=str,
     required=True,
     help='Full path to file in CSV-format containing words and their respective '
-    'frequencies.'
+    'reference frequencies.'
+)
+parser.add_argument(
+    '--freq_paths',
+    type=str,
+    nargs='*',
+    default=[],
+    help='List of paths to files in CSV-format containing words and their respective '
+    'frequencies, to compare against the reference histogram.'
 )
 parser.add_argument(
     '--delim',
@@ -60,32 +68,56 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+
+def get_histogram_as_dict(freq_path):
+  histogram = dict()
+  with open(freq_path) as freq_file:
+    for line in freq_file.readlines():
+      word, freq = line.split(args.delim)
+      freq = int(freq)
+      histogram[word] = freq
+  return histogram
+
+
+def get_histogram_as_list(freq_path):
+  frequencies = list()
+  words = list()
+  with open(freq_path) as freq_file:
+    for line in freq_file.readlines():
+      word, freq = line.split(args.delim)
+      words.append(word)
+      frequencies.append(int(freq))
+  return words, frequencies
+
+
 def main():
-  with open(args.freq_path) as freq_file:
-    histogram = list(
-      map(
-        lambda line: int(line.split(args.delim)[1]),
-        freq_file.read().split('\n')
-      )
-    )
+  all_words, all_frequencies = get_histogram_as_list(args.ref_freq_path)
+  assert len(all_words) == len(all_frequencies)
+  histograms = [
+      get_histogram_as_dict(freq_path)
+      for freq_path in args.freq_paths]
   for plot_window in args.plot_windows:
+    words, frequencies = all_words, all_frequencies
     s, e = list(map(int, plot_window.split(':')))
-    assert s <= e
-    if e > len(histogram):
-      histogram = histogram + [0] * (e - len(histogram))
+    assert s <= e, 'Invlid window: %s' % plot_window
+    if e > len(words):
+      words = words + [0] * (e - len(words))
+      frequencies = frequencies + [0] * (e - len(frequencies))
     none_if_zero = lambda x: x if x else None
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xticks(range(s, e, args.x_step))
     ax.set_yticks(range(0, args.curb_freq, args.y_step))
-    plt.fill_between(range(s, e), 0, histogram[none_if_zero(s):none_if_zero(e)])
+    plt.plot(frequencies[none_if_zero(s):none_if_zero(e)])
+    for histogram in histograms:
+      plt.plot(list(histogram.get(word, 0) for word in words), 'o', markersize=1)
     plt.axis([s, e, 0, args.curb_freq])
     plt.xlabel('Order')
     plt.ylabel('Frequency')
     plt.grid(True)
     # Save and clear.
     plt.savefig('.'.join(filter(None,
-        [args.freq_path, 'histogram', plot_window.replace(args.delim, '-'), args.format]
+        [args.ref_freq_path, 'histogram', plot_window.replace(args.delim, '-'), args.format]
     )))
     plt.clf()
 
