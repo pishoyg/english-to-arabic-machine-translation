@@ -20,7 +20,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 def main():
-  print(corpus_bleu(args.ref_corpus_path, args.hyp_corpus_path))
+  print(100 * corpus_bleu(args.ref_corpus_path, args.hyp_corpus_path))
 
 if __name__ == '__main__':
   main()
