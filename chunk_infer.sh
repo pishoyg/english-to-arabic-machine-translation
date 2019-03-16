@@ -3,7 +3,7 @@ OUT_DIR=""
 INFERENCE_INPUT_FILE=""
 INFERENCE_OUTPUT_FILE=""
 # Temporary work directory.
-WORK_DIR="${HOME}/tmp/tmp"
+WORK_DIR="${HOME}/tmp/chunk_infer"
 CHUNK_SIZE="100000"
 
 # Parsing flags.
@@ -52,8 +52,11 @@ split \
 # TODO: add a flag to decide on whether to overwrite existing output.
 for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
   OUT_CHUNK="${CHUNK}.inference"
+  # Check if the output chunk exists, and whether it has the expected
+  # number of lines to ensure it's not partially written.
   if [[ ! -f ${OUT_CHUNK} ]] ||
       [[ $(wc ${OUT_CHUNK} | awk '{print $1}') != $(wc ${CHUNK} | awk '{print $1}') ]]; then
+    # Fill empty lines with the string "<unk>".
     sed -i 's/^$/<unk>/g' "${CHUNK}"
     python3 -m nmt.nmt.nmt \
       --out_dir="${OUT_DIR}" \
