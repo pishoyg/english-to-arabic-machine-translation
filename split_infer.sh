@@ -3,7 +3,7 @@ OUT_DIR=""
 INFERENCE_INPUT_FILE=""
 INFERENCE_OUTPUT_FILE=""
 # Temporary work directory.
-WORK_DIR="/tmp/tmp"
+WORK_DIR="${HOME}/tmp/tmp"
 CHUNK_SIZE="100000"
 
 # Parsing flags.
