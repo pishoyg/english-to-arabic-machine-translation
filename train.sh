@@ -15,6 +15,7 @@
 # - Create an output directory bearing the name of the experiment.
 # - Copy train, dev, and test date into the output directory.
 # - Copy a prefix of the vocabulary into the output directory.
+# - If embeddings are present, copy embeddings file, and filter vocabulary.
 # - Launch tensorboard.
 # - Launch google-chrome.
 # - Launch email_update.
@@ -28,7 +29,7 @@ TGT="ara"
 SRC_V=40000
 TGT_V=40000
 SRC_EXTENSION="clean"
-TGT_EXTENSION="stanford.clean"
+TGT_EXTENSION="clean"
 CORPUS_PREFIX=""
 BATCH_SIZE=128
 EMBED_PREFIX=""
@@ -186,9 +187,23 @@ for LANG_SIDE in SRC TGT; do
   LANGUAGE_EXTENSION="${!LANGUAGE_EXTENSION}"
   LANGUAGE_V="${LANG_SIDE}_V"
   LANGUAGE_V="${!LANGUAGE_V}"
+  # Vocabulary.
   if [[ ! -f "${DATA_PREFIX}.vocab-head.${LANGUAGE}" ]]; then
     head -${TGT_V} "${CORPUS_PREFIX}.${LANGUAGE_EXTENSION}.vocab.${LANGUAGE}" > "${DATA_PREFIX}.vocab-head.${LANGUAGE}" || exit 1
   fi
+  # Embeddings.
+  if [[ ! -z "${EMBED_PREFIX}" ]] &&
+      [[ -f "${EMBED_PREFIX}.${LANGUAGE}" ]] &&
+      [[ ! -f "${DATA_PREFIX}.embeddings.${LANGUAGE}" ]]; then
+    python3 \
+      english-to-arabic-machine-translation/filter_vocab.py \
+      --input_glove="${EMBED_PREFIX}.${LANGUAGE}" \
+      --input_vocab="${DATA_PREFIX}.vocab-head.${LANGUAGE}" \
+      --output_glove="${DATA_PREFIX}.embeddings.${LANGUAGE}" \
+      --output_vocab="${DATA_PREFIX}.vocab-head.${LANGUAGE}" \
+      || exit
+  fi
+  # Training, validation, and testing sets.
   for PARTITION in "train" "dev" "test"; do
     cp --no-clobber "${CORPUS_PREFIX}.${LANGUAGE_EXTENSION}.${PARTITION}.${LANGUAGE}" "${DATA_PREFIX}.${PARTITION}.${LANGUAGE}" || exit 1
   done
@@ -204,7 +219,7 @@ COMMAND="python3 -m nmt.nmt.nmt \\
   --dev_prefix=${DATA_PREFIX}.dev \\
   --test_prefix=${DATA_PREFIX}.test \\
   --batch_size=${BATCH_SIZE} \\
-  --embed_prefix=${EMBED_PREFIX} \\
+  --embed_prefix=${DATA_PREFIX}.embeddings \\
   --num_layers=${NUM_LAYERS} \\
   --num_units=${NUM_UNITS} \\
   --unit_type=${UNIT_TYPE} \\
@@ -253,4 +268,3 @@ ${COMMAND}
 
 # After training ends, kill the background job.
 kill $(jobs -p)
-
