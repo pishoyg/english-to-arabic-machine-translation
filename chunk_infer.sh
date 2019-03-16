@@ -1,9 +1,41 @@
-# Set default values.
+# Run a model in inference mode, tolerating outrageously large datasets.
+#
+# INPUT:
+# - Trained NMT model.
+# - Dataset in source language.
+#
+# OUTPUT:
+# - Inferred translations in target language.
+#
+# The input is chunked, and chunks are inferred separately in sequence.
+# The final output is the concatenation of the translations of the
+# chunks.
+# In case of failure, inference can be resumed using the same command.
+# Chunks that have already been translated won't be regenerated. Chunks
+# that are partially written will be detected and overwritten.
+#
+# Example:
+#   bash english-to-arabic-machine-translation/chunk_infer.sh \
+#     --out_dir=${NMT_MODEL}/avg_best_bleu \
+#     --inference_input_file=UN.clean.eng \
+#     --work_dir=tmp/chunk_infer_UN_clean_eng
+#
+# WARNING: It's highly recommended to choose a clean work directory,
+# and to erase it after inference is done.
+
+
+## FLAGS.
+# NMT model output directory.
 OUT_DIR=""
+# Input test set containing sentences in source language, one per line.
 INFERENCE_INPUT_FILE=""
+# Output file containing translations in target langauge, one per line.
 INFERENCE_OUTPUT_FILE=""
-# Temporary work directory.
+# Temporary work directory. It's preferred for it to be nonexistent.
+# Defaults to "${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer" if
+# not set.
 WORK_DIR="${HOME}/tmp/chunk_infer"
+# Size of each chunk, in number of sentences.
 CHUNK_SIZE="100000"
 
 # Parsing flags.
@@ -30,16 +62,24 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-# Input validation.
+# Input validation and preprocessing.
 if [[ -d "${WORK_DIR}" ]]; then
   echo "WARNING: \${WORK_DIR}: ${WORK_DIR} exists."
 else
+  # Create work directory if nonexistent.
   mkdir -p "${WORK_DIR}" || exit 1
 fi
+if [[ -z "${INFERENCE_OUTPUT_FILE}" ]]; then
+  # Assign default value to INFERENCE_OUTPUT_FILE, if not set by flags.
+  INFERENCE_OUTPUT_FILE="${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer"
+fi
 
+
+## MAIN
 # Make operations visible to user.
 set -o xtrace
 
+# Chunk the input dataset, potentially overriding already existing chunks.
 split \
   --numeric-suffixes=0 \
   --suffix-length=7 \
@@ -49,15 +89,16 @@ split \
   "${WORK_DIR}/tmp-" \
    || exit 1
 
-# TODO: add a flag to decide on whether to overwrite existing output.
+# Infer each chunk separately.
 for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
-  OUT_CHUNK="${CHUNK}.inference"
+  OUT_CHUNK="${CHUNK}.infer"
   # Check if the output chunk exists, and whether it has the expected
   # number of lines to ensure it's not partially written.
   if [[ ! -f ${OUT_CHUNK} ]] ||
       [[ $(wc ${OUT_CHUNK} | awk '{print $1}') != $(wc ${CHUNK} | awk '{print $1}') ]]; then
     # Fill empty lines with the string "<unk>".
-    sed -i 's/^$/<unk>/g' "${CHUNK}"
+    sed -i 's/^$/<unk>/g' "${CHUNK}" || exit 1
+    # Infer translations.
     python3 -m nmt.nmt.nmt \
       --out_dir="${OUT_DIR}" \
       --inference_input_file="${CHUNK}" \
@@ -66,7 +107,7 @@ for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
   fi
 done
 
-cat ${WORK_DIR}/tmp-*.split.inference > "${INFERENCE_OUTPUT_FILE}" || exit 1
+cat ${WORK_DIR}/tmp-*.split.infer > "${INFERENCE_OUTPUT_FILE}" || exit 1
 
-# TODO: Arrange for the deletion of the work directory.
-# rm -r "${WORK_DIR}"
+echo "WARNING: \${WORK_DIR}: ${WORK_DIR} needs to be cleaned up manually."
+
