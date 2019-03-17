@@ -9,9 +9,9 @@ WORK_DIR="${HOME}/tmp/chunk_madamira_tokenize"
 # Size of each chunk, in number of sentences.
 CHUNK_SIZE="100000"
 # MADAMIRA jar.
-MADAMIRA_JAR="madamira/MADAMIRA-release-20150421-2.1/MADAMIRA-release-20150421-2.1.jar"
+MADAMIRA_JAR="MADAMIRA-release-20170403-2.1/MADAMIRA-release-20170403-2.1.jar"
 # MADAMIRA config.
-MADAMIRA_RAWCONFIG="madamira/MADAMIRA-release-20150421-2.1/samples/sampleConfigFile.xml"
+MADAMIRA_RAWCONFIG="MADAMIRA-release-20170403-2.1/samples/sampleConfigFile.xml"
 
 # Parsing flags.
 while [ $# -gt 0 ]; do
