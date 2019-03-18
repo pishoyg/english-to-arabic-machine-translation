@@ -73,19 +73,19 @@ while [ $# -gt 0 ]; do
 done
 
 # Input validation and preprocessing.
+if [[ -z "${INFERENCE_OUTPUT_FILE}" ]]; then
+  # Assign default value to INFERENCE_OUTPUT_FILE, if not set by flags.
+  INFERENCE_OUTPUT_FILE="${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer"
+fi
+if [[ -z "${WORD_DIR}" ]]; then
+  # Assign default value to
+  WORD_DIR="${HOME}/tmp/chunk_infer/$(basename ${INFERENCE_OUTPUT_FILE})"
+fi
 if [[ -d "${WORK_DIR}" ]]; then
   echo "WARNING: \${WORK_DIR}: ${WORK_DIR} exists."
 else
   # Create work directory if nonexistent.
   mkdir -p "${WORK_DIR}" || exit 1
-fi
-if [[ -z "${INFERENCE_OUTPUT_FILE}" ]]; then
-  # Assign default value to INFERENCE_OUTPUT_FILE, if not set by flags.
-  INFERENCE_OUTPUT_FILE="${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer"
-fi
-if [[ -z "${WORD_DIR}"]]; then
-  # Assign default value to
-  WORD_DIR="${HOME}/tmp/chunk_infer/$(basename ${INFERENCE_OUTPUT_FILE})"
 fi
 
 ## MAIN
@@ -117,8 +117,8 @@ for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
       --inference_input_file="${CHUNK}" \
       --inference_output_file="${OUT_CHUNK}" \
       || exit 1
-    rm "${CHUNK}"
   fi
+  rm "${CHUNK}"
 done
 
 cat ${WORK_DIR}/tmp-*.split.infer > "${INFERENCE_OUTPUT_FILE}" || exit 1
