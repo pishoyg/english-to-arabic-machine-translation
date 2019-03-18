@@ -25,17 +25,27 @@
 
 
 ## FLAGS.
+
 # NMT model output directory.
+# Mandatory argument.
 OUT_DIR=""
+
 # Input test set containing sentences in source language, one per line.
+# Mandatory argument.
 INFERENCE_INPUT_FILE=""
+
 # Output file containing translations in target langauge, one per line.
-INFERENCE_OUTPUT_FILE=""
-# Temporary work directory. It's preferred for it to be nonexistent.
 # Defaults to "${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer" if
 # not set.
-WORK_DIR="${HOME}/tmp/chunk_infer"
+INFERENCE_OUTPUT_FILE=""
+
+# Temporary work directory. It's preferred for it to be nonexistent.
+# Defaults to "${HOME}/tmp/chunk_infer/$(basename ${INFERENCE_OUTPUT_FILE})"
+# if not set.
+WORK_DIR=""
+
 # Size of each chunk, in number of sentences.
+# Defaults to 100000.
 CHUNK_SIZE="100000"
 
 # Parsing flags.
@@ -73,7 +83,10 @@ if [[ -z "${INFERENCE_OUTPUT_FILE}" ]]; then
   # Assign default value to INFERENCE_OUTPUT_FILE, if not set by flags.
   INFERENCE_OUTPUT_FILE="${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer"
 fi
-
+if [[ -z "${WORD_DIR}"]]; then
+  # Assign default value to
+  WORD_DIR="${HOME}/tmp/chunk_infer/$(basename ${INFERENCE_OUTPUT_FILE})"
+fi
 
 ## MAIN
 # Make operations visible to user.
@@ -104,6 +117,7 @@ for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
       --inference_input_file="${CHUNK}" \
       --inference_output_file="${OUT_CHUNK}" \
       || exit 1
+    rm "${CHUNK}"
   fi
 done
 
