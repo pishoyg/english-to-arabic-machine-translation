@@ -108,9 +108,9 @@ def main():
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xticks(range(s, e, args.x_step))
     ax.set_yticks(range(0, args.curb_freq, args.y_step))
-    plt.plot(frequencies[none_if_zero(s):none_if_zero(e)])
     for histogram in histograms:
-      plt.plot(list(histogram.get(word, 0) for word in words), 'o', markersize=1)
+      plt.plot(list(histogram.get(word, 0) for word in words), 'o', markersize=1, color='orange')
+    plt.plot(frequencies[none_if_zero(s):none_if_zero(e)], color='blue')
     plt.axis([s, e, 0, args.curb_freq])
     plt.xlabel('Order')
     plt.ylabel('Frequency')
