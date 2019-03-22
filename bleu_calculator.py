@@ -35,10 +35,10 @@ class ZeroLengthGeneratorWrapper(object):
     return 0
 
 
-def corpus_bleu(ref_corpus_path, hyp_corpus_path, fast=True, track=10000):
+def corpus_bleu(ref_corpus_path, hyp_corpus_path, memory_friendly=True, track=10000):
   with open(ref_corpus_path) as ref_corpus_file:
     with open(hyp_corpus_path) as hyp_corpus_file:
       list_of_references = map(lambda line: [line.split()], ref_corpus_file)
       hypotheses = map(lambda line: line.split(), hyp_corpus_file)
-      wrapper = (lambda gen: ZeroLengthGeneratorWrapper(gen, track)) if fast else list
+      wrapper = (lambda gen: ZeroLengthGeneratorWrapper(gen, track)) if memory_friendly else list
       return bleu_score.corpus_bleu(wrapper(list_of_references), wrapper(hypotheses))

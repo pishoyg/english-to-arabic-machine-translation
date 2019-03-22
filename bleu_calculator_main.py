@@ -25,31 +25,36 @@ parser.add_argument(
   type=int,
   default=0,
   help='Print counter every <track> sentences. If 0, print nothing. '
-  'Only usable with --fast.'
+  'Only usable with --memory_friendly.'
 )
 parser.add_argument(
-  '--fast',
-  dest='fast',
+  '--memory_friendly',
+  dest='memory_friendly',
   action='store_true',
   default=True,
   help='If set, will implement a memory-friendly generator wrapper '
   'for BLEU score calculation.'
 )
 parser.add_argument(
-  '--no-fast',
-  dest='fast',
+  '--no-memory_friendly',
+  dest='memory_friendly',
   action='store_false',
   default=False,
-  help='Opposite of --fast.'
+  help='Opposite of --memory_friendly.'
 )
 
 args = parser.parse_args()
-assert not args.track or args.fast, '--track is only available with --fast.'
+assert not args.track or args.memory_friendly, '--track is only available with --memory_friendly.'
 
 def main():
   start_time = time.clock()
-  print(100 * corpus_bleu(args.ref_corpus_path, args.hyp_corpus_path, fast=args.fast, track=args.track))
-  print(time.clock() - start_time)
+  print('BLEU: ',
+        100 * corpus_bleu(args.ref_corpus_path,
+                          args.hyp_corpus_path,
+                          memory_friendly=args.memory_friendly,
+                          track=args.track))
+  print('Time: ',
+        time.clock() - start_time)
 
 
 if __name__ == '__main__':
