@@ -35,7 +35,7 @@ OUT_DIR=""
 INFERENCE_INPUT_FILE=""
 
 # Output file containing translations in target langauge, one per line.
-# Defaults to "${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer" if
+# Defaults to "${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer.${TGT}" if
 # not set.
 INFERENCE_OUTPUT_FILE=""
 
@@ -47,6 +47,9 @@ WORK_DIR=""
 # Size of each chunk, in number of sentences.
 # Defaults to 100000.
 CHUNK_SIZE="100000"
+
+# Target language, to be used as an extension to the output file.
+TGT="ara"
 
 # Parsing flags.
 while [ $# -gt 0 ]; do
@@ -66,6 +69,9 @@ while [ $# -gt 0 ]; do
     --chunk_size=*)
       CHUNK_SIZE="${1#*=}"
       ;;
+    --tgt=*)
+      TGT="${1#*=}"
+      ;;
     *)
       echo "Unknown flag: ${1}" && exit 1
   esac
@@ -75,7 +81,7 @@ done
 # Input validation and preprocessing.
 if [[ -z "${INFERENCE_OUTPUT_FILE}" ]]; then
   # Assign default value to INFERENCE_OUTPUT_FILE, if not set by flags.
-  INFERENCE_OUTPUT_FILE="${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer"
+  INFERENCE_OUTPUT_FILE="${OUT_DIR}/$(basename ${INFERENCE_INPUT_FILE}).infer.${TGT}"
 fi
 if [[ -z "${WORD_DIR}" ]]; then
   # Assign default value to
@@ -104,7 +110,7 @@ split \
 
 # Infer each chunk separately.
 for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
-  OUT_CHUNK="${CHUNK}.infer"
+  OUT_CHUNK="${CHUNK}.infer.${TGT}"
   # Check if the output chunk exists, and whether it has the expected
   # number of lines to ensure it's not partially written.
   if [[ ! -f ${OUT_CHUNK} ]] ||
@@ -121,7 +127,6 @@ for CHUNK in $(ls ${WORK_DIR}/tmp-*.split); do
   rm "${CHUNK}"
 done
 
-cat ${WORK_DIR}/tmp-*.split.infer > "${INFERENCE_OUTPUT_FILE}" || exit 1
+cat ${WORK_DIR}/tmp-*.split.infer.${TGT} > "${INFERENCE_OUTPUT_FILE}" || exit 1
 
 echo "WARNING: \${WORK_DIR}: ${WORK_DIR} needs to be cleaned up manually."
-

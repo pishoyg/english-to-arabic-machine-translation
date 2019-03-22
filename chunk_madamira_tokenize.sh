@@ -1,3 +1,34 @@
+# Tokenize an arabic corpus with MADAMIRA, tolerating outrageously large
+# into intermediate chunks.
+#
+# MADAMIRA Information:
+#   https://camel.abudhabi.nyu.edu/madamira/
+#   http://innovation.columbia.edu/technologies/cu14012_arabic-language-disambiguation-for-natural-language-processing-applications
+#
+# INPUT:
+# - Path to MADAMIRA model.
+# - Path to Arabic corpus.
+#
+# OUTPUT:
+# - Tokenized corpus.
+#
+# The input is chunked, and chunks are tokenized separately in sequence.
+# The final output is the concatenation of the tokenizations of the
+# chunks.
+# In case of failure, inference can be resumed using the same command.
+# Chunks that have already been tokenized won't be regenerated. Chunks
+# that were partially written will be detected and repeated.
+#
+# Example:
+#   bash english-to-arabic-machine-translation/chunk_madamira_tokenize.sh \
+#     --inference_input_file="corpora/UN/UN.ara" \
+#     --madamira_jar="tokenizers/MADAMIRA-release-20170403-2.1/MADAMIRA-release-20170403-2.1.jar" \
+#     --madamira_rawconfig="tokenizers/MADAMIRA-release-20170403-2.1/samples/sampleConfigFile.xml" \
+#     --work_dir="tmp/chunk_madamira_tokenize_UN_ara"
+#
+# WARNING: It's highly recommended to choose a clean work directory,
+# and to erase it after tokenization is done.
+
 ## FLAGS.
 # Input test set containing sentences in Arabic, one per line.
 INPUT_FILE=""

@@ -1,4 +1,4 @@
-# english-to-arabic-machine-translation
+# english-to-arabic-machine-translation _(under construction)_
 ## Neural Machine Translation.
 The training platform that we are using is [Google seq2seq](https://github.com/tensorflow/nmt). Run the following command to obtain it.
 ``` shell
