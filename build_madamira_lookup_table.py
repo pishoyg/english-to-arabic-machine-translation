@@ -16,7 +16,7 @@ parser.add_argument(
 parser.add_argument(
   '--lookup_table',
   type=str,
-  required=True,
+  default='lookup_table.txt',
   help='Path to output file to save lookup table.'
 )
 parser.add_argument(
@@ -34,7 +34,6 @@ def main():
   lookup_table = dict()
   cleaner = lang_cleaner.lang_to_cleaner['ara']
   for madamira_xml in args.madamira_xmls:
-    old_size = len(lookup_table)
     print('Processing %s.' % madamira_xml)
     root = ET.parse(madamira_xml).getroot()
     for word_info in get_descendants(root, 'word_info'):
@@ -50,18 +49,15 @@ def main():
             cleaner.clean(tok.get('form0'))
             for tok in get_descendants(tokenized, 'tok')]
         assert segmented
-        # if len(segmented) == 1:
-        #   continue
         segmented = ' '.join(segmented)
         if segmented not in lookup_table:
           lookup_table[segmented] = dict()
         if desegmented not in lookup_table[segmented]:
           lookup_table[segmented][desegmented] = 0
         lookup_table[segmented][desegmented] += 1
-    print(len(lookup_table))
   lookup_table = {segmented: max(desegmented.items(), key=lambda x: x[1])[0] for segmented, desegmented in lookup_table.items()}
   with open(args.lookup_table, 'w') as lookup_table_file:
-    lookup_table_file.write(str(lookup_table))
+    lookup_table_file.write(''.join(k + ':' + v + '\n' for k, v in lookup_table.items()))
 
 if __name__ == '__main__':
   main()
